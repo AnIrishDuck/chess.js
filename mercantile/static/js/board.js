@@ -93,8 +93,9 @@ Piece.prototype.moveTo = function(x, y, animate) {
         }
     }
 
+    var distance = Math.max(Math.abs(self.x -x), Math.abs(self.y - y));
     self.avatar.transitionTo({
-        x: x * SIZE, y: y * SIZE, duration: 0.5,
+        x: x * SIZE, y: y * SIZE, duration: 0.125 + (1.0 * distance / 8),
         callback: fin
     });
 }
