@@ -26,8 +26,11 @@ var Piece = function(board, player, type, x, y) {
         highlight(self.x, self.y, "#ff0", 0.5);
 
         var valid = self.validMoves();
-        _.each(valid, function(sq) {
+        _.each(valid.moves, function(sq) {
             highlight(sq.x, sq.y, "#0f0", 0.5);
+        });
+        _.each(valid.captures, function(sq) {
+            highlight(sq.x, sq.y, "#f00", 0.5);
         });
 
         board.moveLayer.draw();
@@ -48,12 +51,25 @@ Piece.prototype.validMoves = function() {
     var self = this;
     var unobstructed = function(dx, dy) {
         var x = self.x + dx; var y = self.y + dy;
-        var moves = [];
+        var val = {moves: [], captures: []};
+
         while(self.board.validSquare(x, y) && !self.board.occupied(x, y)) {
-            moves.push({x: x, y: y})
+            val.moves.push({x: x, y: y})
             x += dx; y += dy;
         }
-        return moves;
+
+        if(self.board.validSquare(x, y) && self.board.occupied(x, y) &&
+           self.board.occupant(x, y).player !== self.player) {
+            val.captures = [{x: x, y: y}];
+        }
+
+        return val;
+    }
+    var combine = function() {
+        return {
+            moves: _.flatten(_.pluck(arguments, "moves")),
+            captures: _.flatten(_.pluck(arguments, "captures"))
+        }
     }
     var moves = {
         p: function() {
@@ -71,12 +87,12 @@ Piece.prototype.validMoves = function() {
             }
         },
         r: function() {
-            return _.flatten([unobstructed(0, 1), unobstructed(0, -1),
-                              unobstructed(1, 0), unobstructed(-1, 0)]);
+            return combine(unobstructed(0, 1), unobstructed(0, -1),
+                           unobstructed(1, 0), unobstructed(-1, 0));
         },
         b: function() {
-            return _.flatten([unobstructed(1, 1), unobstructed(1, -1),
-                              unobstructed(-1, 1), unobstructed(-1, -1)]);
+            return combine(unobstructed(1, 1), unobstructed(1, -1),
+                           unobstructed(-1, 1), unobstructed(-1, -1));
         }
     }
     return moves[self.type]();
@@ -141,9 +157,13 @@ var Board = function(stage) {
     });
 }
 
-Board.prototype.occupied = function(x, y) {
+Board.prototype.occupant = function(x, y) {
     var ts = _.filter(this.pieces, function(p) { return p.x == x && p.y == y})
-    return ts.length > 0;
+    return ts[0];
+}
+
+Board.prototype.occupied = function(x, y) {
+    return this.occupant(x, y) !== undefined;
 }
 
 Board.prototype.validSquare = function(x, y) {
