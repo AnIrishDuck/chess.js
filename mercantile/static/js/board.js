@@ -119,7 +119,7 @@ var Board = function(stage) {
             });
 
             // Now add pawns.
-            var r = player === "white" ? 1 : 6;
+            var r = Piece.pawnStart[player];
             _.each(_.range(8), function(ix) {
                 self.pieces.push(new Piece(self, player, "p", ix, r))
             });
