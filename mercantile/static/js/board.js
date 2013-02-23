@@ -36,7 +36,10 @@ var Piece = function(board, player, type, x, y) {
             });
         });
         _.each(valid.captures, function(sq) {
-            highlight(sq.x, sq.y, "#f00", 0.5);
+            var capture = highlight(sq.x, sq.y, "#f00", 0.5);
+            capture.on('click', function() {
+                self.moveTo(sq.x, sq.y, true);
+            });
         });
 
         layer.draw();
@@ -58,7 +61,7 @@ var Piece = function(board, player, type, x, y) {
 }
 Piece.imgs = {white: {}, black: {}};
 Piece.pawnDir = {white: 1, black: -1};
-Piece.pawnStart = {white: 1, black: 6};
+Piece.pawnStart = {white: 3, black: 4};
 
 Piece.prototype.moveTo = function(x, y, animate) {
     var self = this;
@@ -75,6 +78,19 @@ Piece.prototype.moveTo = function(x, y, animate) {
         self.board.hoverLayer.show();
         self.board.moveLayer.draw();
         self.board.hoverLayer.draw();
+    }
+
+    if(self.board.occupied(x, y)) {
+        var take = self.board.occupant(x, y);
+
+        var oldFin = fin;
+        var fin = function() {
+            self.board.pieces = _.reject(self.board.pieces, function(p) {
+                return p.x === x && p.y === y;
+            });
+            take.avatar.hide();
+            oldFin();
+        }
     }
 
     self.avatar.transitionTo({
@@ -218,12 +234,12 @@ var Board = function(stage) {
     self.hoverLayer = new Kinetic.Layer();
     stage.add(self.hoverLayer);
 
-    self.moveLayer = new Kinetic.Layer();
-    stage.add(self.moveLayer);
-
     self.pieces = [];
     self.pieceLayer = new Kinetic.Layer();
     stage.add(self.pieceLayer);
+
+    self.moveLayer = new Kinetic.Layer();
+    stage.add(self.moveLayer);
 
     var order = _.flatten(_.map(["l", "d"], function(c) {
         return _.map(["k", "q", "r", "b", "n", "p"], function(p) {
