@@ -137,6 +137,21 @@ Piece.prototype.validMoves = function() {
                 return moveBy(sq.dx, sq.dy);
             });
             return combine.apply(undefined, neighbors);
+        },
+        n: function() {
+            var baseDelta = [{dx: 2, dy: 1}, {dx: 1, dy: 2}];
+            var rot1d = [-1, 1];
+            var allDeltas = _.flatten(_.map(rot1d, function(rx) {
+                return _.map(rot1d, function(ry) {
+                    return _.map(baseDelta, function(d) {
+                        return {dx: d.dx * rx, dy: d.dy * ry}
+                    });
+                });
+            }));
+            var jumps = _.map(allDeltas, function(sq) {
+                return moveBy(sq.dx, sq.dy);
+            });
+            return combine.apply(undefined, jumps);
         }
     }
     return moves[self.type]();
