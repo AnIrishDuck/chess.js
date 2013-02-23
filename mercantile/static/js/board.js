@@ -49,6 +49,13 @@ Piece.pawnStart = {white: 1, black: 6};
 
 Piece.prototype.validMoves = function() {
     var self = this;
+
+    var enemyAt = function(x, y) {
+        return (self.board.validSquare(x, y) &&
+                self.board.occupied(x, y) &&
+                self.board.occupant(x, y).player !== self.player);
+    }
+
     var unobstructed = function(dx, dy) {
         var x = self.x + dx; var y = self.y + dy;
         var val = {moves: [], captures: []};
@@ -58,33 +65,34 @@ Piece.prototype.validMoves = function() {
             x += dx; y += dy;
         }
 
-        if(self.board.validSquare(x, y) && self.board.occupied(x, y) &&
-           self.board.occupant(x, y).player !== self.player) {
+        if(enemyAt(x, y)) {
             val.captures = [{x: x, y: y}];
         }
 
         return val;
     }
+
     var combine = function() {
         return {
             moves: _.flatten(_.pluck(arguments, "moves")),
             captures: _.flatten(_.pluck(arguments, "captures"))
         }
     }
+
     var moves = {
         p: function() {
-            var next = _.map(_.range(1, 3), function(amt) {
-                return {
-                    x: self.x,
-                    y: self.y + amt * Piece.pawnDir[self.player]
-                }
+            var dy = Piece.pawnDir[self.player];
+            var next = unobstructed(0, dy).moves;
+            var firstRank = self.y === Piece.pawnStart[self.player];
+
+            next = next.slice(0, firstRank ? 2 : 1);
+
+            var captures = [1, -1].map(function(dx) {
+                return {x: self.x + dx, y: self.y + dy}
             });
-            if(self.y === Piece.pawnStart[self.player]) {
-                return next;
-            }
-            else {
-                return next.slice(0, 1);
-            }
+            var hasEnemy = function(s) { return enemyAt(s.x, s.y) }
+
+            return {moves: next, captures: _.filter(captures, hasEnemy)};
         },
         r: function() {
             return combine(unobstructed(0, 1), unobstructed(0, -1),
