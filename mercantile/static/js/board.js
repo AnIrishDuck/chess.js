@@ -73,6 +73,10 @@ Piece.prototype.validMoves = function() {
         r: function() {
             return _.flatten([unobstructed(0, 1), unobstructed(0, -1),
                               unobstructed(1, 0), unobstructed(-1, 0)]);
+        },
+        b: function() {
+            return _.flatten([unobstructed(1, 1), unobstructed(1, -1),
+                              unobstructed(-1, 1), unobstructed(-1, -1)]);
         }
     }
     return moves[self.type]();
