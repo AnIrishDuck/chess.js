@@ -13,39 +13,75 @@ var Piece = function(board, player, type, x, y) {
         x: x * SIZE, y: y * SIZE, width: SIZE, height: SIZE,
         image: Piece.imgs[player][type]
     });
+    self.avatar = p;
 
-    p.on('mouseover', function() {
+    var addMoves = function(layer) {
         document.body.style.cursor = 'pointer';
         var highlight = function(x, y, color, opacity) {
-            board.moveLayer.add(new Kinetic.Rect({
+            var hi = new Kinetic.Rect({
                 x: x * SIZE, y: y * SIZE,
                 width: SIZE, height: SIZE, fill: color, opacity: opacity
-            }));
+            })
+            layer.add(hi);
+            return hi;
         }
 
         highlight(self.x, self.y, "#ff0", 0.5);
 
         var valid = self.validMoves();
         _.each(valid.moves, function(sq) {
-            highlight(sq.x, sq.y, "#0f0", 0.5);
+            var move = highlight(sq.x, sq.y, "#0f0", 0.5);
+            move.on('click', function() {
+                self.moveTo(sq.x, sq.y, true);
+            });
         });
         _.each(valid.captures, function(sq) {
             highlight(sq.x, sq.y, "#f00", 0.5);
         });
 
-        board.moveLayer.draw();
+        layer.draw();
+    }
+
+    p.on('click', function() {
+        board.moveLayer.removeChildren();
+        addMoves(board.moveLayer);
     });
+
+    p.on('mouseover', function() { addMoves(board.hoverLayer) });
 
     p.on('mouseout', function() {
         document.body.style.cursor = 'default';
-        board.moveLayer.removeChildren();
-        board.moveLayer.draw();
+        board.hoverLayer.removeChildren();
+        board.hoverLayer.draw();
     });
     board.pieceLayer.add(p);
 }
 Piece.imgs = {white: {}, black: {}};
 Piece.pawnDir = {white: 1, black: -1};
 Piece.pawnStart = {white: 1, black: 6};
+
+Piece.prototype.moveTo = function(x, y, animate) {
+    var self = this;
+    self.board.moveLayer.removeChildren();
+
+    self.board.moveLayer.hide();
+    self.board.hoverLayer.hide();
+    self.board.moveLayer.draw();
+    self.board.hoverLayer.draw();
+
+    var fin = function() {
+        self.x = x; self.y = y;
+        self.board.moveLayer.show();
+        self.board.hoverLayer.show();
+        self.board.moveLayer.draw();
+        self.board.hoverLayer.draw();
+    }
+
+    self.avatar.transitionTo({
+        x: x * SIZE, y: y * SIZE, duration: 0.5,
+        callback: fin
+    });
+}
 
 Piece.prototype.validMoves = function() {
     var self = this;
@@ -169,11 +205,18 @@ var Board = function(stage) {
                 x: (sx * SIZE), y: (sy * SIZE), width: SIZE, height: SIZE,
                 fill: checker, stroke: "grey", strokeWidth: 2
             });
+            square.on("click", function() {
+                self.moveLayer.removeChildren();
+                self.moveLayer.draw();
+            });
             board.add(square);
         });
     });
 
     stage.draw();
+
+    self.hoverLayer = new Kinetic.Layer();
+    stage.add(self.hoverLayer);
 
     self.moveLayer = new Kinetic.Layer();
     stage.add(self.moveLayer);
