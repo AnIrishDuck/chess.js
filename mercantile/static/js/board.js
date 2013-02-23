@@ -1,10 +1,26 @@
 define(["kinetic"], function(Kinetic) {
 
+var SIZE = 75;
+
+var Piece = function(board, player, type, x, y) {
+    var self = this;
+    self.board = board
+    self.type = type;
+    self.x = x; self.y = y;
+
+    var p = new Kinetic.Image({
+        x: x * SIZE, y: y * SIZE, width: SIZE, height: SIZE,
+        image: Piece.imgs[player][type]
+    });
+    board.pieceLayer.add(p);
+}
+Piece.imgs = {white: {}, black: {}}
+
 var Board = function(stage) {
+    var self = this;
     var board = new Kinetic.Layer();
     stage.add(board);
 
-    var SIZE = 75;
     _.each(_.range(8), function(sy) {
         _.each(_.range(8), function(sx) {
             var checker = (sx + sy) % 2 == 0 ? "white" : "#444";
@@ -18,11 +34,9 @@ var Board = function(stage) {
 
     stage.draw();
 
-    var pieces = new Kinetic.Layer();
-    stage.add(pieces);
-
-    var blackImgs = {};
-    var whiteImgs = {};
+    self.pieces = [];
+    self.pieceLayer = new Kinetic.Layer();
+    stage.add(self.pieceLayer);
 
     var order = _.flatten(_.map(["l", "d"], function(c) {
         return _.map(["k", "q", "r", "b", "n", "p"], function(p) {
@@ -31,25 +45,17 @@ var Board = function(stage) {
     }));
 
     var setup = function() {
-        _.each([blackImgs, whiteImgs], function(imgs) {
+        _.each(["white", "black"], function(player) {
             // Major pieces first.
-            var r = imgs === whiteImgs ? 0 : 7;
+            var r = player === "white" ? 0 : 7;
             _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(p, ix) {
-                var p = new Kinetic.Image({
-                    x: ix * SIZE, y: r * SIZE, width: SIZE, height: SIZE,
-                    image: imgs[p]
-                });
-                pieces.add(p);
+                self.pieces.push(new Piece(self, player, p, ix, r))
             });
 
-            // Add pawns.
-            var r = imgs === whiteImgs ? 1 : 6;
+            // Now add pawns.
+            var r = player === "white" ? 1 : 6;
             _.each(_.range(8), function(ix) {
-                var p = new Kinetic.Image({
-                    x: ix * SIZE, y: r * SIZE, width: SIZE, height: SIZE,
-                    image: imgs['p']
-                });
-                pieces.add(p);
+                self.pieces.push(new Piece(self, player, "p", ix, r))
             });
         });
         stage.draw();
@@ -60,7 +66,7 @@ var Board = function(stage) {
         var i = new Image();
         i.onload = setupCb;
         i.src = "pieces/" + imgId + ".svg"
-        var imgs = imgId[1] === 'l' ? whiteImgs : blackImgs;
+        var imgs = imgId[1] === 'l' ? Piece.imgs.white : Piece.imgs.black;
         imgs[imgId[0]] = i;
         return i;
     });
