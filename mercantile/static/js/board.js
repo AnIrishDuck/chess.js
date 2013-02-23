@@ -4,7 +4,7 @@ var Board = function(stage) {
     var board = new Kinetic.Layer();
     stage.add(board);
 
-    var SIZE = 50;
+    var SIZE = 75;
     _.each(_.range(8), function(sy) {
         _.each(_.range(8), function(sx) {
             var checker = (sx + sy) % 2 == 0 ? "white" : "#444";
