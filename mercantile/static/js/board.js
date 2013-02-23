@@ -56,6 +56,24 @@ Piece.prototype.validMoves = function() {
                 self.board.occupant(x, y).player !== self.player);
     }
 
+    var moveBy = function(dx, dy) {
+        var x = self.x + dx; var y = self.y + dy;
+        var sq = {x: x, y: y};
+        var noActions = {moves: [], captures: []};
+        if(!self.board.validSquare(x, y)) {
+            return noActions;
+        }
+        if(self.board.occupied(x, y)) {
+            if(enemyAt(x, y)) {
+                return {moves: [], captures: [sq]};
+            }
+            else { return noActions }
+        }
+        else {
+            return {moves: [sq], captures: []}
+        }
+    }
+
     var unobstructed = function(dx, dy) {
         var x = self.x + dx; var y = self.y + dy;
         var val = {moves: [], captures: []};
@@ -101,6 +119,24 @@ Piece.prototype.validMoves = function() {
         b: function() {
             return combine(unobstructed(1, 1), unobstructed(1, -1),
                            unobstructed(-1, 1), unobstructed(-1, -1));
+        },
+        q: function() {
+            return combine(moves.r(), moves.b());
+        },
+        k: function() {
+            var delta1d = [-1, 0, 1];
+            var delta2d = _.flatten(_.map(delta1d, function(dx) {
+                return _.map(delta1d, function(dy) {
+                    return {dx: dx, dy: dy};
+                })
+            }));
+            delta2d = _.reject(delta2d, function(sq) {
+                return sq.dx === 0 && sq.dy === 0;
+            });
+            neighbors = _.map(delta2d, function(sq) {
+                return moveBy(sq.dx, sq.dy);
+            });
+            return combine.apply(undefined, neighbors);
         }
     }
     return moves[self.type]();
