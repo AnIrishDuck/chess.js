@@ -47,6 +47,15 @@ Piece.pawnStart = {white: 1, black: 6};
 
 Piece.prototype.validMoves = function() {
     var self = this;
+    var unobstructed = function(dx, dy) {
+        var x = self.x + dx; var y = self.y + dy;
+        var moves = [];
+        while(self.board.validSquare(x, y) && !self.board.occupied(x, y)) {
+            moves.push({x: x, y: y})
+            x += dx; y += dy;
+        }
+        return moves;
+    }
     var moves = {
         p: function() {
             var next = _.map(_.range(1, 3), function(amt) {
@@ -61,6 +70,10 @@ Piece.prototype.validMoves = function() {
             else {
                 return next.slice(0, 1);
             }
+        },
+        r: function() {
+            return _.flatten([unobstructed(0, 1), unobstructed(0, -1),
+                              unobstructed(1, 0), unobstructed(-1, 0)]);
         }
     }
     return moves[self.type]();
@@ -123,6 +136,15 @@ var Board = function(stage) {
         imgs[imgId[0]] = i;
         return i;
     });
+}
+
+Board.prototype.occupied = function(x, y) {
+    var ts = _.filter(this.pieces, function(p) { return p.x == x && p.y == y})
+    return ts.length > 0;
+}
+
+Board.prototype.validSquare = function(x, y) {
+    return x >= 0 && y >= 0 && x < 8 && y < 8;
 }
 
 return Board;
