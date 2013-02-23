@@ -21,20 +21,6 @@ var Board = function(stage) {
     var pieces = new Kinetic.Layer();
     stage.add(pieces);
 
-    var img = new Image();
-    img.onload = function() {
-        var p = new Kinetic.Image({
-            x: 0,
-            y: 0,
-            width: 50,
-            height: 50,
-            image: img
-        });
-        pieces.add(p);
-        stage.draw();
-    }
-    img.src = "pieces/kd.svg"
-
     var setup = function() {
         _.each(pieceImgs, function(img, ix) {
             var p = new Kinetic.Image({
