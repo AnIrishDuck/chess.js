@@ -60,8 +60,11 @@ var Piece = function(board, player, type, x, y) {
     board.pieceLayer.add(p);
 }
 Piece.imgs = {white: {}, black: {}};
+Piece.startRank = {white: 0, black: 7};
 Piece.pawnDir = {white: 1, black: -1};
-Piece.pawnStart = {white: 3, black: 4};
+Piece.pawnStart = {white: 1, black: 6};
+Piece.pawnPromote = {white: Piece.startRank.black,
+                     black: Piece.startRank.white};
 
 Piece.prototype.moveTo = function(x, y, animate) {
     var self = this;
@@ -251,7 +254,7 @@ var Board = function(stage) {
     var setup = function() {
         _.each(["white", "black"], function(player) {
             // Major pieces first.
-            var r = player === "white" ? 0 : 7;
+            var r = Piece.startRank[player];
             _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(p, ix) {
                 self.pieces.push(new Piece(self, player, p, ix, r))
             });
