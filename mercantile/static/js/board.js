@@ -4,7 +4,8 @@ var SIZE = 75;
 
 var Piece = function(board, player, type, x, y) {
     var self = this;
-    self.board = board
+    self.board = board;
+    self.player = player;
     self.type = type;
     self.x = x; self.y = y;
 
@@ -12,9 +13,58 @@ var Piece = function(board, player, type, x, y) {
         x: x * SIZE, y: y * SIZE, width: SIZE, height: SIZE,
         image: Piece.imgs[player][type]
     });
+
+    p.on('mouseover', function() {
+        document.body.style.cursor = 'pointer';
+        var start = new Kinetic.Rect({
+            x: self.x * SIZE, y: self.y * SIZE,
+            width: SIZE, height: SIZE, fill: "#ff0", opacity: 0.75
+        });
+        board.moveLayer.add(start);
+
+        var valid = self.validMoves();
+        _.each(valid, function(sq) {
+            var move = new Kinetic.Rect({
+                x: sq.x * SIZE, y: sq.y * SIZE,
+                width: SIZE, height: SIZE, fill: "#0f0", opacity: 0.5
+            });
+            board.moveLayer.add(move);
+        });
+
+        board.moveLayer.draw();
+    });
+
+    p.on('mouseout', function() {
+        document.body.style.cursor = 'default';
+        board.moveLayer.removeChildren();
+        board.moveLayer.draw();
+    });
     board.pieceLayer.add(p);
 }
-Piece.imgs = {white: {}, black: {}}
+Piece.imgs = {white: {}, black: {}};
+Piece.pawnDir = {white: 1, black: -1};
+Piece.pawnStart = {white: 1, black: 6};
+
+Piece.prototype.validMoves = function() {
+    var self = this;
+    var moves = {
+        p: function() {
+            var next = _.map(_.range(1, 3), function(amt) {
+                return {
+                    x: self.x,
+                    y: self.y + amt * Piece.pawnDir[self.player]
+                }
+            });
+            if(self.y === Piece.pawnStart[self.player]) {
+                return next;
+            }
+            else {
+                return next.slice(0, 1);
+            }
+        }
+    }
+    return moves[self.type]();
+}
 
 var Board = function(stage) {
     var self = this;
@@ -33,6 +83,9 @@ var Board = function(stage) {
     });
 
     stage.draw();
+
+    self.moveLayer = new Kinetic.Layer();
+    stage.add(self.moveLayer);
 
     self.pieces = [];
     self.pieceLayer = new Kinetic.Layer();
