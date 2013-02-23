@@ -16,19 +16,18 @@ var Piece = function(board, player, type, x, y) {
 
     p.on('mouseover', function() {
         document.body.style.cursor = 'pointer';
-        var start = new Kinetic.Rect({
-            x: self.x * SIZE, y: self.y * SIZE,
-            width: SIZE, height: SIZE, fill: "#ff0", opacity: 0.75
-        });
-        board.moveLayer.add(start);
+        var highlight = function(x, y, color, opacity) {
+            board.moveLayer.add(new Kinetic.Rect({
+                x: x * SIZE, y: y * SIZE,
+                width: SIZE, height: SIZE, fill: color, opacity: opacity
+            }));
+        }
+
+        highlight(self.x, self.y, "#ff0", 0.5);
 
         var valid = self.validMoves();
         _.each(valid, function(sq) {
-            var move = new Kinetic.Rect({
-                x: sq.x * SIZE, y: sq.y * SIZE,
-                width: SIZE, height: SIZE, fill: "#0f0", opacity: 0.5
-            });
-            board.moveLayer.add(move);
+            highlight(sq.x, sq.y, "#0f0", 0.5);
         });
 
         board.moveLayer.draw();
