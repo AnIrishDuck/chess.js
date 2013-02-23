@@ -31,8 +31,8 @@ var Board = function(stage) {
     }));
 
     var setup = function() {
-        // Add pawns.
         _.each([blackImgs, whiteImgs], function(imgs) {
+            // Major pieces first.
             var r = imgs === whiteImgs ? 0 : 7;
             _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(p, ix) {
                 var p = new Kinetic.Image({
@@ -42,6 +42,7 @@ var Board = function(stage) {
                 pieces.add(p);
             });
 
+            // Add pawns.
             var r = imgs === whiteImgs ? 1 : 6;
             _.each(_.range(8), function(ix) {
                 var p = new Kinetic.Image({
