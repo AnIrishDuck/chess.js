@@ -329,7 +329,10 @@ Piece.prototype.validMoves = function() {
             return combine.apply(undefined, jumps);
         }
     }
-    return moves[self.type]();
+    if(self.board.turn % 2 === (self.player === 'white' ? 0 : 1)) {
+        return moves[self.type]();
+    }
+    else { return [] }
 }
 
 var Board = function(stage) {
