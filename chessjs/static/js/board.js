@@ -44,7 +44,7 @@ var Piece = function(board, player, type, x, y) {
                 width: SIZE, height: SIZE, image: img
             });
             option.on("click", function() {
-                self.moveTo(sq.x, sq.y, t, true);
+                self.postMove(sq.x, sq.y, t);
             });
             option.on("mouseover", function() {
                 demo.add(demoImg);
@@ -82,7 +82,7 @@ var Piece = function(board, player, type, x, y) {
                         addPromo(self.board.moveLayer, sq);
                     }
                     else {
-                        self.moveTo(sq.x, sq.y, null, true);
+                        self.postMove(sq.x, sq.y, null);
                     }
                 });
             });
@@ -93,7 +93,7 @@ var Piece = function(board, player, type, x, y) {
                         addPromo(self.board.moveLayer, sq);
                     }
                     else {
-                        self.moveTo(sq.x, sq.y, null, true);
+                        self.postMove(sq.x, sq.y, null);
                     }
                 });
             });
@@ -123,6 +123,24 @@ Piece.pawnStart = {white: 1, black: 6};
 Piece.pawnPromote = {white: Piece.startRank.black,
                      black: Piece.startRank.white};
 
+Piece.prototype.postMove = function(x, y, promotion) {
+    var self = this;
+
+    var cols = "abcdefgh";
+    var move = cols[self.x] + self.y + "-" + cols[x] + y;
+    if(promotion !== null) {
+        move += promotion;
+    }
+
+    var url = self.board.url + "?move=" + move;
+    $.post(url, function() {
+        console.log("POST", move);
+        self.board.update();
+    }).fail(function() {
+        alert("POST to server failed. Try reloading this page.");
+    });
+}
+
 Piece.prototype.moveTo = function(x, y, promotion, animate) {
     var self = this;
     self.board.moveLayer.removeChildren();
@@ -135,20 +153,6 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
 
     var distance = Math.max(Math.abs(self.x -x), Math.abs(self.y - y));
     var moveTime = 0.125 + (1.0 * distance / 8);
-
-    var updateServer = function() {
-        var cols = "abcdefgh";
-        var move = cols[self.x] + self.y + "-" + cols[x] + y;
-        if(promotion !== null) {
-            move += promotion;
-        }
-
-        var url = self.board.url + "?move=" + move;
-        $.post(url, function() {
-            console.log("POST", move);
-            fin()
-        });
-    }
 
     var fin = function() {
         self.board.moves.push({from: {x: self.x, y: self.y},
@@ -202,7 +206,7 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
     if(animate) {
         self.avatar.transitionTo({
             x: x * SIZE, y: y * SIZE, duration: moveTime,
-            callback: updateServer
+            callback: fin
         });
     }
     else {
@@ -466,6 +470,14 @@ Board.prototype.validSquare = function(x, y) {
     return x >= 0 && y >= 0 && x < 8 && y < 8;
 }
 
+Board.prototype.update = function() {
+    var self = this;
+    $.get(self.url, function(data) {
+        self.player = data.player;
+        self.replay(data.moves.slice(self.turn));
+    });
+}
+
 Board.prototype.replay = function(moves) {
     var self = this;
 
@@ -484,9 +496,9 @@ Board.prototype.replay = function(moves) {
         return result;
     }
     _.each(moves, function(text) {
+        console.log("UPDATE", text);
         var move = parseMove(text);
-        console.log(move);
-        move.mover.moveTo(move.x, move.y, move.promo, false);
+        move.mover.moveTo(move.x, move.y, move.promo, moves.length === 1);
     });
 }
 
