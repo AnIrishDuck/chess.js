@@ -23,6 +23,10 @@
                 board.player = data.player;
                 board.replay(data.moves);
             });
+
+            var interval = window.setInterval(function() {
+                board.update();
+            }, 1000);
         }
     });
 </script>
