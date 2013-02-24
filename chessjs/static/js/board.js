@@ -132,6 +132,20 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
     var distance = Math.max(Math.abs(self.x -x), Math.abs(self.y - y));
     var moveTime = 0.125 + (1.0 * distance / 8);
 
+    var updateServer = function() {
+        var cols = "abcdefgh";
+        var move = cols[self.x] + self.y + "-" + cols[x] + y;
+        if(promotion !== null) {
+            move += promotion;
+        }
+
+        var url = self.board.url + "?move=" + move;
+        $.post(url, function() {
+            console.log("POST", move);
+            fin()
+        });
+    }
+
     var fin = function() {
         self.x = x; self.y = y;
         self.lastMove = self.board.turn;
@@ -152,9 +166,14 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
             rook.x = rookNewX;
             oldFin();
         }
-        rook.avatar.transitionTo({
-            x: rookNewX * SIZE, duration: moveTime
-        });
+        if(animate) {
+            rook.avatar.transitionTo({
+                x: rookNewX * SIZE, duration: moveTime
+            });
+        }
+        else {
+            rook.avatar.setX(rookNewX * SIZE);
+        }
     }
 
     var pawnCapture = self.type === 'p' && x !== self.x
@@ -174,10 +193,17 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
         }
     }
 
-    self.avatar.transitionTo({
-        x: x * SIZE, y: y * SIZE, duration: moveTime,
-        callback: fin
-    });
+    if(animate) {
+        self.avatar.transitionTo({
+            x: x * SIZE, y: y * SIZE, duration: moveTime,
+            callback: updateServer
+        });
+    }
+    else {
+        self.avatar.setX(x * SIZE);
+        self.avatar.setY(y * SIZE);
+        fin();
+    }
 }
 
 Piece.prototype.validMoves = function() {
@@ -335,9 +361,10 @@ Piece.prototype.validMoves = function() {
     else { return [] }
 }
 
-var Board = function(stage) {
+var Board = function(url, stage) {
     var self = this;
 
+    self.url = url;
     self.stage = stage;
     self.turn = 0;
 
@@ -395,6 +422,7 @@ var Board = function(stage) {
             });
         });
         stage.draw();
+        self.onReady();
     }
     var setupCb = _.after(2 * 6, setup);
 
@@ -408,6 +436,8 @@ var Board = function(stage) {
     });
 }
 
+Board.prototype.onReady = function() {}
+
 Board.prototype.occupant = function(x, y) {
     var ts = _.filter(this.pieces, function(p) { return p.x == x && p.y == y})
     return ts[0];
@@ -419,6 +449,30 @@ Board.prototype.occupied = function(x, y) {
 
 Board.prototype.validSquare = function(x, y) {
     return x >= 0 && y >= 0 && x < 8 && y < 8;
+}
+
+Board.prototype.replay = function(moves) {
+    var self = this;
+
+    var parseMove = function(move) {
+        var result = {};
+        var rows = "abcdefgh";
+        result.mover = self.occupant(rows.indexOf(move[0]), parseInt(move[1]));
+        result.x = rows.indexOf(move[3]);
+        result.y = parseInt(move[4]);
+        if(move.length === 6) {
+            result.promo = move[5];
+        }
+        else {
+            result.promo = null;
+        }
+        return result;
+    }
+    _.each(moves, function(text) {
+        var move = parseMove(text);
+        console.log(move);
+        move.mover.moveTo(move.x, move.y, move.promo, false);
+    });
 }
 
 return Board;
