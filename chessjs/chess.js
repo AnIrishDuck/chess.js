@@ -5,10 +5,8 @@ var app = express();
 
 var db = redis.createClient();
 db.select(8, function(err, replies) {
-    db.set("white:/0000000000000000", "0000000000000000", function() {
-        app.listen(3000);
-        console.log("Listening on port 3000.");
-    });
+    app.listen(3000);
+    console.log("Listening on port 3000.");
 });
 
 var hex = "0123456789abcdef";
