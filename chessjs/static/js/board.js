@@ -186,8 +186,12 @@ Piece.prototype.validMoves = function() {
     }
 
     var steal = function(sq) {
+        var attack = {x: sq.x, y: sq.y}
         var otherType = self.board.occupant(sq.x, sq.y).type;
-        return {x: sq.x, y: sq.y, promote: [self.type, otherType]}
+        if(self.type !== otherType && self.type !== 'k') {
+            attack.promote = [self.type, otherType]
+        }
+        return attack
     }
 
     var moveBy = function(dx, dy) {
