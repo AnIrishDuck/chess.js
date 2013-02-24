@@ -117,8 +117,8 @@ Piece.imgs = {white: {}, black: {}};
 Piece.startRank = {white: 0, black: 7};
 Piece.pawnDir = {white: 1, black: -1};
 Piece.pawnStart = {white: 1, black: 6};
-Piece.pawnPromote = {white: 7, //Piece.startRank.black,
-                     black: 0}; //Piece.startRank.white};
+Piece.pawnPromote = {white: Piece.startRank.black,
+                     black: Piece.startRank.white};
 
 Piece.prototype.moveTo = function(x, y, promotion, animate) {
     var self = this;
