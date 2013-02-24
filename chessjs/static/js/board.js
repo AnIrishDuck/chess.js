@@ -60,43 +60,46 @@ var Piece = function(board, player, type, x, y) {
     }
 
     var addMoves = function(layer) {
-        document.body.style.cursor = 'pointer';
-        var highlight = function(x, y, color, opacity) {
-            var hi = new Kinetic.Rect({
-                x: x * SIZE, y: y * SIZE,
-                width: SIZE, height: SIZE, fill: color, opacity: opacity
-            })
-            layer.add(hi);
-            return hi;
+        if(self.player === self.board.player &&
+           self.board.activePlayer() === self.player) {
+            document.body.style.cursor = 'pointer';
+            var highlight = function(x, y, color, opacity) {
+                var hi = new Kinetic.Rect({
+                    x: x * SIZE, y: y * SIZE,
+                    width: SIZE, height: SIZE, fill: color, opacity: opacity
+                })
+                layer.add(hi);
+                return hi;
+            }
+
+            highlight(self.x, self.y, "#ff0", 0.5);
+
+            var valid = self.validMoves();
+            _.each(valid.moves, function(sq) {
+                var move = highlight(sq.x, sq.y, "#0f0", 0.5);
+                move.on('click', function() {
+                    if(sq.promote !== undefined) {
+                        addPromo(self.board.moveLayer, sq);
+                    }
+                    else {
+                        self.moveTo(sq.x, sq.y, null, true);
+                    }
+                });
+            });
+            _.each(valid.captures, function(sq) {
+                var capture = highlight(sq.x, sq.y, "#f00", 0.5);
+                capture.on('click', function() {
+                    if(sq.promote !== undefined) {
+                        addPromo(self.board.moveLayer, sq);
+                    }
+                    else {
+                        self.moveTo(sq.x, sq.y, null, true);
+                    }
+                });
+            });
+
+            layer.draw();
         }
-
-        highlight(self.x, self.y, "#ff0", 0.5);
-
-        var valid = self.validMoves();
-        _.each(valid.moves, function(sq) {
-            var move = highlight(sq.x, sq.y, "#0f0", 0.5);
-            move.on('click', function() {
-                if(sq.promote !== undefined) {
-                    addPromo(self.board.moveLayer, sq);
-                }
-                else {
-                    self.moveTo(sq.x, sq.y, null, true);
-                }
-            });
-        });
-        _.each(valid.captures, function(sq) {
-            var capture = highlight(sq.x, sq.y, "#f00", 0.5);
-            capture.on('click', function() {
-                if(sq.promote !== undefined) {
-                    addPromo(self.board.moveLayer, sq);
-                }
-                else {
-                    self.moveTo(sq.x, sq.y, null, true);
-                }
-            });
-        });
-
-        layer.draw();
     }
 
     p.on('click', function() {
@@ -364,10 +367,7 @@ Piece.prototype.validMoves = function() {
             return combine.apply(undefined, jumps);
         }
     }
-    if(self.board.turn % 2 === (self.player === 'white' ? 0 : 1)) {
-        return moves[self.type]();
-    }
-    else { return [] }
+    return moves[self.type]();
 }
 
 var Board = function(url, stage) {
@@ -445,6 +445,7 @@ var Board = function(url, stage) {
         return i;
     });
 }
+Board.moveOrder = ["white", "black"];
 
 Board.prototype.onReady = function() {}
 
@@ -455,6 +456,10 @@ Board.prototype.occupant = function(x, y) {
 
 Board.prototype.occupied = function(x, y) {
     return this.occupant(x, y) !== undefined;
+}
+
+Board.prototype.activePlayer = function() {
+    return Board.moveOrder[this.turn % Board.moveOrder.length];
 }
 
 Board.prototype.validSquare = function(x, y) {
