@@ -58,7 +58,11 @@ app.all(route, function(req, res, next) {
             req.id = info[2] + ":moves";
             req.player = info[1];
             console.log("%s => %s %s", req.params[0], req.player, req.id);
-            next();
+            db.llen(req.id, function(err, replies) {
+                req.turn = replies;
+                console.log("turn: %s", req.turn);
+                next();
+            });
         }
     });
 });
