@@ -157,13 +157,17 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
         });
     }
 
-    if(self.board.occupied(x, y)) {
+    var pawnCapture = self.type === 'p' && x !== self.x
+    if(self.board.occupied(x, y) || pawnCapture) {
         var take = self.board.occupant(x, y);
+        if(pawnCapture && take === undefined) {
+            take = self.board.occupant(x, y - Piece.pawnDir[self.player]);
+        }
 
         var oldFin = fin;
         var fin = function() {
             self.board.pieces = _.reject(self.board.pieces, function(p) {
-                return p.x === x && p.y === y;
+                return p.x === take.x && p.y === take.y;
             });
             take.avatar.hide();
             oldFin();
@@ -248,6 +252,17 @@ Piece.prototype.validMoves = function() {
             });
             var hasEnemy = function(s) { return enemyAt(s.x, s.y) }
             captures = _.map(_.filter(captures, hasEnemy), steal);
+
+            var enPassant = _.filter([-1, 1], function(dx) {
+                var other = self.board.occupant(self.x + dx, self.y);
+                return (other !== undefined && other.type === 'p' &&
+                        other.lastMove !== undefined &&
+                        other.lastMove === self.board.turn - 1);
+            });
+            enPassant = _.map(enPassant, function(dx) {
+                return {x: self.x + dx, y: self.y + dy}
+            });
+            captures = _.flatten([enPassant, captures]);
 
             var addPromo = function(s) {
                 if(s.y === Piece.pawnPromote[self.player]) {
