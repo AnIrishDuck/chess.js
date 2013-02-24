@@ -18,9 +18,9 @@ var hexID = function(len) {
     return id.join("");
 }
 
-var sendMoves = function(id, res) {
-    db.lrange(id, 0, -1, function(err, replies) {
-        res.json({"moves" : replies});
+var sendMoves = function(req, res) {
+    db.lrange(req.id, 0, -1, function(err, replies) {
+        res.json({"moves" : replies, "player": req.player});
     });
 }
 
@@ -64,7 +64,7 @@ app.all(route, function(req, res, next) {
 });
 
 app.get(route, function(req, res) {
-    sendMoves(req.id, res);
+    sendMoves(req, res);
 });
 
 app.post(route, function(req, res) {
@@ -74,7 +74,7 @@ app.post(route, function(req, res) {
     }
     else {
         db.lpush(req.id, req.param("move"), function() {
-            sendMoves(req.id, res);
+            sendMoves(req, res);
         });
     }
 });
