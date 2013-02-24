@@ -148,6 +148,8 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
     }
 
     var fin = function() {
+        self.board.moves.push({from: {x: self.x, y: self.y},
+                               to: {x: x, y: y}});
         self.x = x; self.y = y;
         self.lastMove = self.board.turn;
         self.board.turn += 1;
@@ -282,9 +284,15 @@ Piece.prototype.validMoves = function() {
 
             var enPassant = _.filter([-1, 1], function(dx) {
                 var other = self.board.occupant(self.x + dx, self.y);
+                var lastMove = undefined;
+                if(self.board.moves.length > 0) {
+                    lastMove = self.board.moves[self.board.moves.length - 1];
+                }
                 return (other !== undefined && other.type === 'p' &&
                         other.lastMove !== undefined &&
-                        other.lastMove === self.board.turn - 1);
+                        other.lastMove === self.board.turn - 1 &&
+                        (lastMove.from.y === Piece.pawnStart.white ||
+                         lastMove.from.y === Piece.pawnStart.black));
             });
             enPassant = _.map(enPassant, function(dx) {
                 return {x: self.x + dx, y: self.y + dy}
@@ -393,6 +401,7 @@ var Board = function(url, stage) {
     stage.add(self.hoverLayer);
 
     self.pieces = [];
+    self.moves = [];
     self.pieceLayer = new Kinetic.Layer();
     stage.add(self.pieceLayer);
 
