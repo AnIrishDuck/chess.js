@@ -24,7 +24,7 @@ var sendMoves = function(req, res) {
     });
 }
 
-var moveRE = /^[a-h][1-8]-[a-h][1-8][qrbnp]?$/
+var moveRE = /^[a-h][0-7]-[a-h][0-7][qrbnp]?$/
 
 app.use(express.logger());
 app.use('/static', express.static(__dirname + '/static'));
