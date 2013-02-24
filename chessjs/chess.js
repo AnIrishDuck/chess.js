@@ -73,7 +73,7 @@ app.post(route, function(req, res) {
         res.end();
     }
     else {
-        db.lpush(req.id, req.param("move"), function() {
+        db.rpush(req.id, req.param("move"), function() {
             sendMoves(req, res);
         });
     }
