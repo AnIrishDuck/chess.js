@@ -15,6 +15,50 @@ var Piece = function(board, player, type, x, y) {
     });
     self.avatar = p;
 
+    var addPromo = function(layer, sq) {
+        var OPTION_SIZE = 25;
+        var start = {x: sq.x * SIZE, y: sq.y * SIZE};
+
+        layer.add(new Kinetic.Rect({
+            x: start.x - 1, y: start.y - 1,
+            width: sq.promote.length * OPTION_SIZE + 2,
+            height: OPTION_SIZE + 2,
+            fill: "#888", stroke: "#ccc", strokeWidth: 2.0
+        }));
+
+        _.each(sq.promote, function(t, ix) {
+            var img = Piece.imgs[self.player][t]
+            var option = new Kinetic.Image({
+                x: start.x + (OPTION_SIZE * ix),
+                y: start.y,
+                width: OPTION_SIZE,
+                height: OPTION_SIZE,
+                image: img
+            });
+
+            var demo = new Kinetic.Group();
+            layer.add(demo);
+            demo.moveToBottom();
+            var demoImg = new Kinetic.Image({
+                x: sq.x * SIZE, y: sq.y * SIZE,
+                width: SIZE, height: SIZE, image: img
+            });
+            option.on("click", function() {
+                self.moveTo(sq.x, sq.y, t, true);
+            });
+            option.on("mouseover", function() {
+                demo.add(demoImg);
+                layer.draw();
+            });
+            option.on("mouseout", function() {
+                demo.removeChildren();
+                layer.draw();
+            });
+            layer.add(option);
+        });
+        layer.draw();
+    }
+
     var addMoves = function(layer) {
         document.body.style.cursor = 'pointer';
         var highlight = function(x, y, color, opacity) {
@@ -32,13 +76,23 @@ var Piece = function(board, player, type, x, y) {
         _.each(valid.moves, function(sq) {
             var move = highlight(sq.x, sq.y, "#0f0", 0.5);
             move.on('click', function() {
-                self.moveTo(sq.x, sq.y, true);
+                if(sq.promote !== undefined) {
+                    addPromo(self.board.moveLayer, sq);
+                }
+                else {
+                    self.moveTo(sq.x, sq.y, null, true);
+                }
             });
         });
         _.each(valid.captures, function(sq) {
             var capture = highlight(sq.x, sq.y, "#f00", 0.5);
             capture.on('click', function() {
-                self.moveTo(sq.x, sq.y, true);
+                if(sq.promote !== undefined) {
+                    addPromo(self.board.moveLayer, sq);
+                }
+                else {
+                    self.moveTo(sq.x, sq.y, null, true);
+                }
             });
         });
 
@@ -66,7 +120,7 @@ Piece.pawnStart = {white: 1, black: 6};
 Piece.pawnPromote = {white: Piece.startRank.black,
                      black: Piece.startRank.white};
 
-Piece.prototype.moveTo = function(x, y, animate) {
+Piece.prototype.moveTo = function(x, y, promotion, animate) {
     var self = this;
     self.board.moveLayer.removeChildren();
 
@@ -77,10 +131,11 @@ Piece.prototype.moveTo = function(x, y, animate) {
 
     var fin = function() {
         self.x = x; self.y = y;
+        self.type = promotion || self.type;
+        self.avatar.setImage(Piece.imgs[self.player][self.type]);
         self.board.moveLayer.show();
         self.board.hoverLayer.show();
-        self.board.moveLayer.draw();
-        self.board.hoverLayer.draw();
+        self.board.stage.draw();
     }
 
     if(self.board.occupied(x, y)) {
@@ -166,7 +221,15 @@ Piece.prototype.validMoves = function() {
             });
             var hasEnemy = function(s) { return enemyAt(s.x, s.y) }
 
-            return {moves: next, captures: _.filter(captures, hasEnemy)};
+            var addPromo = function(s) {
+                if(s.y === Piece.pawnPromote[self.player]) {
+                    s.promote = ['q', 'r', 'b', 'n'];
+                }
+                return s;
+            }
+
+            return {moves: _.map(next, addPromo),
+                    captures: _.map(_.filter(captures, hasEnemy), addPromo)};
         },
         r: function() {
             return combine(unobstructed(0, 1), unobstructed(0, -1),
@@ -215,6 +278,8 @@ Piece.prototype.validMoves = function() {
 
 var Board = function(stage) {
     var self = this;
+    self.stage = stage;
+
     var board = new Kinetic.Layer();
     stage.add(board);
 
@@ -244,6 +309,9 @@ var Board = function(stage) {
 
     self.moveLayer = new Kinetic.Layer();
     stage.add(self.moveLayer);
+
+    self.uiLayer = new Kinetic.Layer();
+    stage.add(self.uiLayer);
 
     var order = _.flatten(_.map(["l", "d"], function(c) {
         return _.map(["k", "q", "r", "b", "n", "p"], function(p) {
