@@ -123,6 +123,7 @@ Piece.pawnPromote = {white: Piece.startRank.black,
 Piece.prototype.moveTo = function(x, y, promotion, animate) {
     var self = this;
     self.board.moveLayer.removeChildren();
+    self.board.hoverLayer.removeChildren();
 
     self.board.moveLayer.hide();
     self.board.hoverLayer.hide();
