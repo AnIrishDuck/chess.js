@@ -381,10 +381,8 @@ var Board = function(stage) {
         _.each(["white", "black"], function(player) {
             // Major pieces first.
             var r = Piece.startRank[player];
-            _.each(['r', 0, 0, 'k', 0, 0, 0, 'r'], function(p, ix) {
-                if(p !== 0) {
-                    self.pieces.push(new Piece(self, player, p, ix, r))
-                }
+            _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(p, ix) {
+                self.pieces.push(new Piece(self, player, p, ix, r))
             });
 
             // Now add pawns.
