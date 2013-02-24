@@ -129,13 +129,32 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
     self.board.moveLayer.draw();
     self.board.hoverLayer.draw();
 
+    var distance = Math.max(Math.abs(self.x -x), Math.abs(self.y - y));
+    var moveTime = 0.125 + (1.0 * distance / 8);
+
     var fin = function() {
         self.x = x; self.y = y;
+        self.lastMove = self.board.turn;
+        self.board.turn += 1;
         self.type = promotion || self.type;
         self.avatar.setImage(Piece.imgs[self.player][self.type]);
         self.board.moveLayer.show();
         self.board.hoverLayer.show();
         self.board.stage.draw();
+    }
+
+    var castle = self.type === 'k' && Math.abs(self.x - x) === 2;
+    if(castle) {
+        var rook = self.board.occupant(self.x - x > 0 ? 0 : 7, self.y);
+        var rookNewX = x + (self.x - x > 0 ? 1 : -1);
+        var oldFin = fin;
+        var fin = function() {
+            rook.x = rookNewX;
+            oldFin();
+        }
+        rook.avatar.transitionTo({
+            x: rookNewX * SIZE, duration: moveTime
+        });
     }
 
     if(self.board.occupied(x, y)) {
@@ -151,9 +170,8 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
         }
     }
 
-    var distance = Math.max(Math.abs(self.x -x), Math.abs(self.y - y));
     self.avatar.transitionTo({
-        x: x * SIZE, y: y * SIZE, duration: 0.125 + (1.0 * distance / 8),
+        x: x * SIZE, y: y * SIZE, duration: moveTime,
         callback: fin
     });
 }
@@ -261,7 +279,20 @@ Piece.prototype.validMoves = function() {
             neighbors = _.map(delta2d, function(sq) {
                 return moveBy(sq.dx, sq.dy);
             });
-            return combine.apply(undefined, neighbors);
+            var castles = _.filter([0, 7], function(rookPos) {
+                var rook = self.board.occupant(rookPos, self.y);
+                return (self.lastMove === undefined &&
+                        rook !== undefined && rook.lastMove === undefined);
+            });
+            var castleMoves = {captures: []};
+            castleMoves.moves = _.map(castles, function(rookPos) {
+                var dxToRook = self.x - rookPos;
+                var dx = -Math.floor(2 * (Math.abs(dxToRook) / dxToRook));
+                return {x: self.x + dx,
+                        y: self.y}
+            });
+            var allMoves = _.flatten([neighbors, castleMoves]);
+            return combine.apply(undefined, allMoves);
         },
         n: function() {
             var baseDelta = [{dx: 2, dy: 1}, {dx: 1, dy: 2}];
@@ -284,7 +315,9 @@ Piece.prototype.validMoves = function() {
 
 var Board = function(stage) {
     var self = this;
+
     self.stage = stage;
+    self.turn = 0;
 
     var board = new Kinetic.Layer();
     stage.add(board);
@@ -329,8 +362,10 @@ var Board = function(stage) {
         _.each(["white", "black"], function(player) {
             // Major pieces first.
             var r = Piece.startRank[player];
-            _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(p, ix) {
-                self.pieces.push(new Piece(self, player, p, ix, r))
+            _.each(['r', 0, 0, 'k', 0, 0, 0, 'r'], function(p, ix) {
+                if(p !== 0) {
+                    self.pieces.push(new Piece(self, player, p, ix, r))
+                }
             });
 
             // Now add pawns.
