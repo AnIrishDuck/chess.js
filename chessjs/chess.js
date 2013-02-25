@@ -27,9 +27,14 @@ var sendMoves = function(req, res) {
 var moveRE = /^[a-h][0-7]-[a-h][0-7][qrbnp]?$/
 
 app.use(express.logger());
-app.use('/static', express.static(__dirname + '/static'));
+app.use('/js', express.static(__dirname + '/static/js'));
+app.use('/pieces', express.static(__dirname + '/static/pieces'));
 
-app.get('/health', function(req, res){
+app.get('/game', function(req, res) {
+    res.sendfile(__dirname + "/static/page.html");
+});
+
+app.get('/health', function(req, res) {
   res.send({
     pid: process.pid,
     memory: process.memoryUsage(),
