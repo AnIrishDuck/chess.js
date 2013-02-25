@@ -29,6 +29,14 @@ var moveRE = /^[a-h][0-7]-[a-h][0-7][qrbnp]?$/
 app.use(express.logger());
 app.use('/static', express.static(__dirname + '/static'));
 
+app.get('/health', function(req, res){
+  res.send({
+    pid: process.pid,
+    memory: process.memoryUsage(),
+    uptime: process.uptime()
+  })
+})
+
 app.post("/new", function(req, res) {
     var root = hexID();
     var ids = {}
@@ -80,8 +88,7 @@ app.post(route, function(req, res) {
         db.watch(req.id);
         db.llen(req.id, function(err, len) {
             if(parseInt(req.param("turn")) !== len) {
-                tr.discard();
-                res.send(422, "wrong turn: " + len + " not " + 
+                res.send(422, "wrong turn: " + len + " not " +
                          req.param("turn") + "!");
                 res.end();
             }
