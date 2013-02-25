@@ -159,7 +159,6 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
                                to: {x: x, y: y}});
         self.x = x; self.y = y;
         self.lastMove = self.board.turn;
-        self.board.turn += 1;
         self.type = promotion || self.type;
         self.avatar.setImage(Piece.imgs[self.player][self.type]);
         self.board.moveLayer.show();
@@ -450,6 +449,14 @@ var Board = function(url, stage) {
     });
 }
 Board.moveOrder = ["white", "black"];
+Board.playerText = {
+    white: {white: "Your turn, White.", black: "Waiting on Black..."},
+    black: {black: "Your turn, Black.", white: "Waiting on White..."},
+    spec: {
+        white: "Spectating: White to move.",
+        black: "Spectating: Black to move."
+    }
+}
 
 Board.prototype.onReady = function() {}
 
@@ -475,6 +482,8 @@ Board.prototype.update = function() {
     $.get(self.url, function(data) {
         self.player = data.player;
         self.replay(data.moves.slice(self.turn));
+        self.turn = data.moves.length;
+        $("#player").html(Board.playerText[self.player][self.activePlayer()]);
     });
 }
 
