@@ -132,7 +132,7 @@ Piece.prototype.postMove = function(x, y, promotion) {
         move += promotion;
     }
 
-    var url = self.board.url + "?move=" + move;
+    var url = self.board.url + "?move=" + move + "&turn=" + self.board.turn;
     $.post(url, function() {
         console.log("POST", move);
         self.board.update();

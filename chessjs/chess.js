@@ -77,8 +77,19 @@ app.post(route, function(req, res) {
         res.end();
     }
     else {
-        db.rpush(req.id, req.param("move"), function() {
-            sendMoves(req, res);
+        db.watch(req.id);
+        db.llen(req.id, function(err, len) {
+            if(parseInt(req.param("turn")) !== len) {
+                tr.discard();
+                res.send(422, "wrong turn: " + len + " not " + 
+                         req.param("turn") + "!");
+                res.end();
+            }
+            else {
+                db.multi()
+                    .rpush(req.id, req.param("move"))
+                    .exec(function() { sendMoves(req, res) });
+            }
         });
     }
 });
