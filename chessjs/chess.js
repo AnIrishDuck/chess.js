@@ -34,6 +34,11 @@ app.get('/game', function(req, res) {
     res.sendfile(__dirname + "/static/page.html");
 });
 
+app.get('/new', function(req, res) {
+    res.sendfile(__dirname + "/static/new.html");
+});
+
+
 app.get('/health', function(req, res) {
   res.send({
     pid: process.pid,

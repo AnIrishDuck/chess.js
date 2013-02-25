@@ -1,0 +1,115 @@
+<html>
+<head>
+    <title>New Game</title>
+    <link href='http://fonts.googleapis.com/css?family=Titillium+Web:600,700'
+          rel='stylesheet' type='text/css'>
+    <script src="js/jquery-1.9.1.js"></script>
+    <script src="js/underscore.js"></script>
+    <script>
+    $(document).ready(function() {
+        $("#new").click(function() {
+            $("#links").css("visibility", "visible");
+            $.post("/new", function(data) {
+                _.each(_.keys(data), function(k) {
+                    var rel = "/game#" + data[k];
+                    $("#" + k).html(rel).attr("href", rel);
+                });
+            });
+        });
+    });
+    </script>
+    <style>
+    /* This css is jank but it works and I don't feel like prettying it up
+     * right now. */
+    body {
+        background-image: url("pieces/bg.png");
+    }
+    #horizon {
+        position: absolute;
+        top: 50%;
+        left: 0px;
+        width: 100%;
+        height: 1px;
+        display: block;
+    }
+    #box {
+        font-family: 'Titillium Web', sans-serif; font-size: 50px;
+        font-weight: 700;
+        width: 200px; height: 300px;
+        text-align: center;
+        margin-top: -200px;
+        margin-left: -100px;
+        position: absolute;
+        left: 50%;
+        border: 4px #aaa solid;
+        background-image: url("pieces/fg.png");
+    }
+    #player {
+        line-height: 50px;
+    }
+    #new {
+        font-family: 'Titillium Web', sans-serif; font-size: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #c00;
+    }
+    .links {
+        font-size: 25px;
+    }
+    .uri {
+        text-align: right;
+    }
+    .uri-name {
+        font-weight: 700;
+    }
+    #links {
+        font-family: 'Titillium Web', sans-serif; font-size: 25px;
+        font-weight: 600;
+        visibility: hidden;
+        text-decoration: none;
+        width: 700px;
+        margin-left: -350px;
+        margin-top: 125px;
+        padding: 5px;
+        border: 4px #aaa solid;
+        position: absolute;
+        left: 50%;
+        background-image: url("pieces/fg.png");
+    }
+    #links table {
+        width: 700px;
+    }
+    #links a {
+        text-decoration: none;
+        color: #c00;
+    }
+    </style>
+</head>
+<body>
+    <div id="horizon">
+        <div id="box">
+            <img src="pieces/nd.svg" width="200" height="200" />
+            <div id="player">
+                chess.js <br />
+                <a id="new" href="#">New Game?</a>
+            </div>
+        </div>
+        <div id="links">
+            <table>
+                <tr class="links">
+                    <td class="uri-name">White:</td>
+                    <td class="uri"><a id="white" href="#"></a></td>
+                </tr>
+                <tr class="links">
+                    <td class="uri-name">Black:</td>
+                    <td class="uri"><a id="black" href="#"></a></td>
+                </tr>
+                <tr class="links">
+                    <td class="uri-name">Spectator:</td>
+                    <td class="uri"><a id="spec" href="#"></a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
