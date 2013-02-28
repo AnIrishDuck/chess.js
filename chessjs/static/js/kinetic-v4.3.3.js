@@ -28,7 +28,6 @@
 /**
  * @namespace
  */
-define(function() {
 var Kinetic = {}; (function() {
     Kinetic.version = '4.3.3';
     /**
@@ -8250,5 +8249,3 @@ var Kinetic = {}; (function() {
      * @methodOf Kinetic.TextPath.prototype
      */
 })();
-return Kinetic;
-});
