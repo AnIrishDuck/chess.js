@@ -1,3 +1,7 @@
+/* This is just a dumb server that records rules for now. It'd be nice to
+   implement rules checking in the future (that's actually the primary reason
+   I decided to go with Node on the server - no need to duplicate code that
+   checks move validity. */
 var redis = require("redis");
 var express = require("express");
 
@@ -18,15 +22,9 @@ var hexID = function(len) {
     return id.join("");
 }
 
-var sendMoves = function(req, res) {
-    db.lrange(req.id, 0, -1, function(err, replies) {
-        res.json({"moves" : replies, "player": req.player});
-    });
-}
-
-var moveRE = /^[a-h][0-7]-[a-h][0-7][qrbnp]?$/
-
 app.use(express.logger());
+
+/* Static Routes */
 app.use('/js', express.static(__dirname + '/static/js'));
 app.use('/pieces', express.static(__dirname + '/static/pieces'));
 
@@ -38,7 +36,7 @@ app.get('/new', function(req, res) {
     res.sendfile(__dirname + "/static/new.html");
 });
 
-
+/* Health monitoring endpoint. */
 app.get('/health', function(req, res) {
   res.send({
     pid: process.pid,
@@ -47,6 +45,8 @@ app.get('/health', function(req, res) {
   })
 })
 
+/* This route is POSTed to by the static /new page when a new game is
+   requested. */
 app.post("/new", function(req, res) {
     var root = hexID();
     var ids = {}
@@ -64,6 +64,7 @@ app.post("/new", function(req, res) {
 
 var gameID = /^([^:]+):(.*)/
 
+/* Game view / move routes */
 var route = /^\/([a-f0-9]{16})$/
 app.all(route, function(req, res, next) {
     db.get(req.params[0], function(err, replies) {
@@ -85,10 +86,17 @@ app.all(route, function(req, res, next) {
     });
 });
 
+var sendMoves = function(req, res) {
+    db.lrange(req.id, 0, -1, function(err, replies) {
+        res.json({"moves" : replies, "player": req.player});
+    });
+}
+
 app.get(route, function(req, res) {
     sendMoves(req, res);
 });
 
+var moveRE = /^[a-h][0-7]-[a-h][0-7][qrbnp]?$/
 app.post(route, function(req, res) {
     if(moveRE.exec(req.param("move")) === null) {
         res.send(422, "invalid move!");
