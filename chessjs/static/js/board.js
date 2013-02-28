@@ -1,4 +1,6 @@
-define(["kinetic"], function(Kinetic) {
+/* NOTE: for some bizarre reason, if kinetic is included first RequireJS goes
+   bonkers. */
+define(["rules/base", "kinetic"], function(BaseRules, Kinetic) {
 
 var SIZE = 75;
 
@@ -15,99 +17,12 @@ var Piece = function(board, player, type, x, y) {
     });
     self.avatar = p;
 
-    var addPromo = function(layer, sq) {
-        var OPTION_SIZE = 25;
-        var start = {x: sq.x * SIZE, y: sq.y * SIZE};
-
-        layer.add(new Kinetic.Rect({
-            x: start.x - 1, y: start.y - 1,
-            width: sq.promote.length * OPTION_SIZE + 2,
-            height: OPTION_SIZE + 2,
-            fill: "#888", stroke: "#ccc", strokeWidth: 2.0
-        }));
-
-        _.each(sq.promote, function(t, ix) {
-            var img = Piece.imgs[self.player][t]
-            var option = new Kinetic.Image({
-                x: start.x + (OPTION_SIZE * ix),
-                y: start.y,
-                width: OPTION_SIZE,
-                height: OPTION_SIZE,
-                image: img
-            });
-
-            var demo = new Kinetic.Group();
-            layer.add(demo);
-            demo.moveToBottom();
-            var demoImg = new Kinetic.Image({
-                x: sq.x * SIZE, y: sq.y * SIZE,
-                width: SIZE, height: SIZE, image: img
-            });
-            option.on("click", function() {
-                self.postMove(sq.x, sq.y, t);
-            });
-            option.on("mouseover", function() {
-                demo.add(demoImg);
-                layer.draw();
-            });
-            option.on("mouseout", function() {
-                demo.removeChildren();
-                layer.draw();
-            });
-            layer.add(option);
-        });
-        layer.draw();
-    }
-
-    var addMoves = function(layer) {
-        if(self.player === self.board.player &&
-           self.board.activePlayer() === self.player) {
-            document.body.style.cursor = 'pointer';
-            var highlight = function(x, y, color, opacity) {
-                var hi = new Kinetic.Rect({
-                    x: x * SIZE, y: y * SIZE,
-                    width: SIZE, height: SIZE, fill: color, opacity: opacity
-                })
-                layer.add(hi);
-                return hi;
-            }
-
-            highlight(self.x, self.y, "#ff0", 0.5);
-
-            var valid = self.validMoves();
-            _.each(valid.moves, function(sq) {
-                var move = highlight(sq.x, sq.y, "#0f0", 0.5);
-                move.on('click', function() {
-                    if(sq.promote !== undefined) {
-                        addPromo(self.board.moveLayer, sq);
-                    }
-                    else {
-                        self.postMove(sq.x, sq.y, null);
-                    }
-                });
-            });
-            _.each(valid.captures, function(sq) {
-                var capture = highlight(sq.x, sq.y, "#f00", 0.5);
-                capture.on('click', function() {
-                    if(sq.promote !== undefined) {
-                        addPromo(self.board.moveLayer, sq);
-                    }
-                    else {
-                        self.postMove(sq.x, sq.y, null);
-                    }
-                });
-            });
-
-            layer.draw();
-        }
-    }
-
     p.on('click', function() {
         board.moveLayer.removeChildren();
-        addMoves(board.moveLayer);
+        self.addMoveUI(board.moveLayer);
     });
 
-    p.on('mouseover', function() { addMoves(board.hoverLayer) });
+    p.on('mouseover', function() { self.addMoveUI(board.hoverLayer) });
 
     p.on('mouseout', function() {
         document.body.style.cursor = 'default';
@@ -117,12 +32,8 @@ var Piece = function(board, player, type, x, y) {
     board.pieceLayer.add(p);
 }
 Piece.imgs = {white: {}, black: {}};
-Piece.startRank = {white: 0, black: 7};
-Piece.pawnDir = {white: 1, black: -1};
-Piece.pawnStart = {white: 1, black: 6};
-Piece.pawnPromote = {white: Piece.startRank.black,
-                     black: Piece.startRank.white};
 
+/* Post the specified move to the server. */
 Piece.prototype.postMove = function(x, y, promotion) {
     var self = this;
 
@@ -215,162 +126,99 @@ Piece.prototype.moveTo = function(x, y, promotion, animate) {
     }
 }
 
-Piece.prototype.validMoves = function() {
+/* Adds UI allowing player to choose among the valid moves for this piece
+   on a given layer. */
+Piece.prototype.addMoveUI = function(layer) {
     var self = this;
 
-    var enemyAt = function(x, y) {
-        return (self.board.validSquare(x, y) &&
-                self.board.occupied(x, y) &&
-                self.board.occupant(x, y).player !== self.player);
-    }
-
-    var steal = function(sq) {
-        var attack = {x: sq.x, y: sq.y}
-        var otherType = self.board.occupant(sq.x, sq.y).type;
-        if(self.type !== otherType && self.type !== 'k') {
-            attack.promote = [self.type, otherType]
-        }
-        return attack
-    }
-
-    var moveBy = function(dx, dy) {
-        var x = self.x + dx; var y = self.y + dy;
-        var sq = {x: x, y: y};
-        var noActions = {moves: [], captures: []};
-        if(!self.board.validSquare(x, y)) {
-            return noActions;
-        }
-        if(self.board.occupied(x, y)) {
-            if(enemyAt(x, y)) {
-                return {moves: [], captures: [steal(sq)]};
-            }
-            else { return noActions }
-        }
-        else {
-            return {moves: [sq], captures: []}
-        }
-    }
-
-    var unobstructed = function(dx, dy) {
-        var x = self.x + dx; var y = self.y + dy;
-        var val = {moves: [], captures: []};
-
-        while(self.board.validSquare(x, y) && !self.board.occupied(x, y)) {
-            val.moves.push({x: x, y: y})
-            x += dx; y += dy;
+    if(self.player === self.board.player &&
+       self.board.activePlayer() === self.player) {
+        document.body.style.cursor = 'pointer';
+        var highlight = function(x, y, color, opacity) {
+            var hi = new Kinetic.Rect({
+                x: x * SIZE, y: y * SIZE,
+                width: SIZE, height: SIZE, fill: color, opacity: opacity
+            })
+            layer.add(hi);
+            return hi;
         }
 
-        if(enemyAt(x, y)) {
-            val.captures = [steal({x: x, y: y})];
-        }
+        highlight(self.x, self.y, "#ff0", 0.5);
 
-        return val;
-    }
-
-    var combine = function() {
-        return {
-            moves: _.flatten(_.pluck(arguments, "moves")),
-            captures: _.flatten(_.pluck(arguments, "captures"))
-        }
-    }
-
-    var moves = {
-        p: function() {
-            var dy = Piece.pawnDir[self.player];
-            var next = unobstructed(0, dy).moves;
-            var firstRank = self.y === Piece.pawnStart[self.player];
-
-            next = next.slice(0, firstRank ? 2 : 1);
-
-            var captures = [1, -1].map(function(dx) {
-                return {x: self.x + dx, y: self.y + dy}
-            });
-            var hasEnemy = function(s) { return enemyAt(s.x, s.y) }
-            captures = _.map(_.filter(captures, hasEnemy), steal);
-
-            var enPassant = _.filter([-1, 1], function(dx) {
-                var other = self.board.occupant(self.x + dx, self.y);
-                var lastMove = undefined;
-                if(self.board.moves.length > 0) {
-                    lastMove = self.board.moves[self.board.moves.length - 1];
+        var valid = self.validMoves();
+        _.each(valid.moves, function(sq) {
+            var move = highlight(sq.x, sq.y, "#0f0", 0.5);
+            move.on('click', function() {
+                if(sq.promote !== undefined) {
+                    self.addPromoUI(self.board.moveLayer, sq);
                 }
-                return (other !== undefined && other.type === 'p' &&
-                        other.lastMove !== undefined &&
-                        other.lastMove === self.board.turn - 1 &&
-                        (lastMove.from.y === Piece.pawnStart.white ||
-                         lastMove.from.y === Piece.pawnStart.black));
-            });
-            enPassant = _.map(enPassant, function(dx) {
-                return {x: self.x + dx, y: self.y + dy}
-            });
-            captures = _.flatten([enPassant, captures]);
-
-            var addPromo = function(s) {
-                if(s.y === Piece.pawnPromote[self.player]) {
-                    s.promote = ['q', 'r', 'b', 'n'];
+                else {
+                    self.postMove(sq.x, sq.y, null);
                 }
-                return s;
-            }
+            });
+        });
+        _.each(valid.captures, function(sq) {
+            var capture = highlight(sq.x, sq.y, "#f00", 0.5);
+            capture.on('click', function() {
+                if(sq.promote !== undefined) {
+                    self.addPromoUI(self.board.moveLayer, sq);
+                }
+                else {
+                    self.postMove(sq.x, sq.y, null);
+                }
+            });
+        });
 
-            return {moves: _.map(next, addPromo),
-                    captures: _.map(captures, addPromo)};
-        },
-        r: function() {
-            return combine(unobstructed(0, 1), unobstructed(0, -1),
-                           unobstructed(1, 0), unobstructed(-1, 0));
-        },
-        b: function() {
-            return combine(unobstructed(1, 1), unobstructed(1, -1),
-                           unobstructed(-1, 1), unobstructed(-1, -1));
-        },
-        q: function() {
-            return combine(moves.r(), moves.b());
-        },
-        k: function() {
-            var delta1d = [-1, 0, 1];
-            var delta2d = _.flatten(_.map(delta1d, function(dx) {
-                return _.map(delta1d, function(dy) {
-                    return {dx: dx, dy: dy};
-                })
-            }));
-            delta2d = _.reject(delta2d, function(sq) {
-                return sq.dx === 0 && sq.dy === 0;
-            });
-            neighbors = _.map(delta2d, function(sq) {
-                return moveBy(sq.dx, sq.dy);
-            });
-            var castles = _.filter([0, 7], function(rookPos) {
-                var rook = self.board.occupant(rookPos, self.y);
-                return (self.lastMove === undefined &&
-                        rook !== undefined && rook.lastMove === undefined);
-            });
-            var castleMoves = {captures: []};
-            castleMoves.moves = _.map(castles, function(rookPos) {
-                var dxToRook = self.x - rookPos;
-                var dx = -Math.floor(2 * (Math.abs(dxToRook) / dxToRook));
-                return {x: self.x + dx,
-                        y: self.y}
-            });
-            var allMoves = _.flatten([neighbors, castleMoves]);
-            return combine.apply(undefined, allMoves);
-        },
-        n: function() {
-            var baseDelta = [{dx: 2, dy: 1}, {dx: 1, dy: 2}];
-            var rot1d = [-1, 1];
-            var allDeltas = _.flatten(_.map(rot1d, function(rx) {
-                return _.map(rot1d, function(ry) {
-                    return _.map(baseDelta, function(d) {
-                        return {dx: d.dx * rx, dy: d.dy * ry}
-                    });
-                });
-            }));
-            var jumps = _.map(allDeltas, function(sq) {
-                return moveBy(sq.dx, sq.dy);
-            });
-            return combine.apply(undefined, jumps);
-        }
+        layer.draw();
     }
-    return moves[self.type]();
+}
+
+/* Adds UI allowing player to choose among promotion types to a given square
+   on a given layer. */
+Piece.prototype.addPromoUI = function(layer, sq) {
+    var self = this;
+
+    var OPTION_SIZE = 25;
+    var start = {x: sq.x * SIZE, y: sq.y * SIZE};
+
+    layer.add(new Kinetic.Rect({
+        x: start.x - 1, y: start.y - 1,
+        width: sq.promote.length * OPTION_SIZE + 2,
+        height: OPTION_SIZE + 2,
+        fill: "#888", stroke: "#ccc", strokeWidth: 2.0
+    }));
+
+    _.each(sq.promote, function(t, ix) {
+        var img = Piece.imgs[self.player][t]
+        var option = new Kinetic.Image({
+            x: start.x + (OPTION_SIZE * ix),
+            y: start.y,
+            width: OPTION_SIZE,
+            height: OPTION_SIZE,
+            image: img
+        });
+
+        var demo = new Kinetic.Group();
+        layer.add(demo);
+        demo.moveToBottom();
+        var demoImg = new Kinetic.Image({
+            x: sq.x * SIZE, y: sq.y * SIZE,
+            width: SIZE, height: SIZE, image: img
+        });
+        option.on("click", function() {
+            self.postMove(sq.x, sq.y, t);
+        });
+        option.on("mouseover", function() {
+            demo.add(demoImg);
+            layer.draw();
+        });
+        option.on("mouseout", function() {
+            demo.removeChildren();
+            layer.draw();
+        });
+        layer.add(option);
+    });
+    layer.draw();
 }
 
 var Board = function(url, stage) {
@@ -421,18 +269,11 @@ var Board = function(url, stage) {
     }));
 
     var setup = function() {
-        _.each(["white", "black"], function(player) {
-            // Major pieces first.
-            var r = Piece.startRank[player];
-            _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(p, ix) {
-                self.pieces.push(new Piece(self, player, p, ix, r))
-            });
-
-            // Now add pawns.
-            var r = Piece.pawnStart[player];
-            _.each(_.range(8), function(ix) {
-                self.pieces.push(new Piece(self, player, "p", ix, r))
-            });
+        _.each(BaseRules.startingPieces(self, Piece), function(p) {
+            p.validMoves = function() {
+                return BaseRules.validMoves(this);
+            }
+            self.pieces.push(p);
         });
         stage.draw();
         self.onReady();
@@ -458,25 +299,32 @@ Board.playerText = {
     }
 }
 
+/* This function is called once the board has been set up. */
 Board.prototype.onReady = function() {}
 
+/* Returns the piece occupying the given x, y square on the board. */
 Board.prototype.occupant = function(x, y) {
     var ts = _.filter(this.pieces, function(p) { return p.x == x && p.y == y})
     return ts[0];
 }
 
+/* Returns true if the given square is occupied. */
 Board.prototype.occupied = function(x, y) {
     return this.occupant(x, y) !== undefined;
 }
 
+/* Returns the player that can currently move. */
 Board.prototype.activePlayer = function() {
     return Board.moveOrder[this.turn % Board.moveOrder.length];
 }
 
+/* Returns true if the given square coordinates are valid. */
 Board.prototype.validSquare = function(x, y) {
     return x >= 0 && y >= 0 && x < 8 && y < 8;
 }
 
+/* Checks for any updates on the server, and plays back any necessary moves for
+   the user. */
 Board.prototype.update = function() {
     var self = this;
     $.get(self.url, function(data) {
@@ -487,6 +335,7 @@ Board.prototype.update = function() {
     });
 }
 
+/* Replays the given list of moves for the player. */
 Board.prototype.replay = function(moves) {
     var self = this;
 

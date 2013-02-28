@@ -10,7 +10,7 @@
     require.config({
         baseUrl: "js/",
     });
-    require(["kinetic", "board"], function(Kinetic, Board) {
+    require(["board", "kinetic"], function(Board, Kinetic) {
         var stage = new Kinetic.Stage({
             container: "board",
             width: 700,
