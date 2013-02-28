@@ -2,18 +2,20 @@ define([], function() {
 
 var BaseRules = {};
 
+/* Some useful constants. */
 BaseRules.startRank = {white: 0, black: 7};
 BaseRules.pawnDir = {white: 1, black: -1};
 BaseRules.pawnStart = {white: 1, black: 6};
 BaseRules.pawnPromote = {white: BaseRules.startRank.black,
                          black: BaseRules.startRank.white};
+
 /* We use single-character codes to define piece types.
    k: King
    q: Queen
    b: Bishop
    n: Knight
    r: Rook */
-BaseRules.lastRank = ['k', 'q', 'b', 'n', 'r'];
+BaseRules.lastRank = ['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'];
 
 /* Determines the valid moves for a given piece. This function simply uses
    standard rules for determing piece movement. */
@@ -174,12 +176,13 @@ BaseRules.validMoves = function(piece) {
     return moves[piece.type]();
 }
 
+/* This function is called to determine the starting pieces on the board. */
 BaseRules.startingPieces = function(board, Piece) {
     var pieces = [];
     _.each(["white", "black"], function(player) {
         // Major pieces first.
         var rank = BaseRules.startRank[player];
-        _.each(['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'], function(t, col) {
+        _.each(BaseRules.lastRank, function(t, col) {
             pieces.push(new Piece(board, player, t, col, rank));
         });
 
