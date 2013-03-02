@@ -52,24 +52,27 @@ var checkInvalid = function(moves, invalid, done) {
 }
 
 describe('Basic rules', function() {
-    it('should follow the basic interface', function(done) {
+    it('should follow the right interface', function(done) {
         rules.withRules("base", function(Board, BaseRules) {
             should.exist(BaseRules.validMoves);
             should.exist(BaseRules.startingPieces);
             done();
         });
     });
-    it('should allow pawn moves forward', function(done) {
+});
+
+describe('A pawn', function() {
+    it('can move forward', function(done) {
         checkMoves(['a1-a2', 'a6-a5', 'b1-b3'], function() { done() });
     });
-    it('should allow pawn captures', function(done) {
+    it('can capture diagonally', function(done) {
         checkMoves(['a1-a3', 'b6-b4', 'a3-b4'], function() { done() });
     });
-    it('should allow en passant captures', function(done) {
+    it('can capture en passant', function(done) {
         checkMoves(['a1-a3', 'h6-h4', 'a3-a4', 'b6-b4', 'a4-b5'],
                    function() { done() });
     });
-    it('should not allow invalid en passant captures', function(done) {
+    it('cannot capture en passant after the initial move', function(done) {
         checkInvalid(['a1-a3', 'b6-b4', 'h1-h2', 'b4-b3'], 'a3-b4', done);
     });
 });
