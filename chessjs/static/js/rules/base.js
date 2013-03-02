@@ -139,7 +139,7 @@ BaseRules.validMoves = function(piece) {
             delta2d = _.reject(delta2d, function(sq) {
                 return sq.dx === 0 && sq.dy === 0;
             });
-            neighbors = _.map(delta2d, function(sq) {
+            var neighbors = _.map(delta2d, function(sq) {
                 return moveBy(sq.dx, sq.dy);
             });
             var castles = _.filter([0, 7], function(rookPos) {
