@@ -61,6 +61,45 @@ describe('Basic rules', function() {
     });
 });
 
+describe('A king', function() {
+    it('moves only to adjacent squares', function(done) {
+        checkMoves(['d1-d3', 'a6-a5', 'd0-d1', 'a5-a4', 'd1-c2'],
+                   function() { done() });
+    });
+});
+
+describe('A queen', function() {
+    it('can move like a rook', function(done) {
+        checkMoves(['e1-e3', 'a6-a5', 'e0-e2', 'a5-a4', 'e2-a2'],
+                   function() { done() });
+    });
+    it('can move like a bishop', function(done) {
+        checkMoves(['d1-d3', 'a6-a5', 'e0-a4'],
+                   function() { done() });
+    });
+});
+
+describe('A rook', function() {
+    it('can move on columns and rows', function(done) {
+        checkMoves(['a1-a3', 'a6-a5', 'a0-a2', 'h6-h5', 'a2-h2'],
+                   function() { done() });
+    });
+});
+
+describe('A bishop', function() {
+    it('can move on diagonals', function(done) {
+        checkMoves(['d1-d3', 'a6-a5', 'c0-f3', 'a5-a4', 'f3-c6'],
+                   function() { done() });
+    });
+});
+
+describe('A knight', function() {
+    it('moves in L shapes', function(done) {
+        checkMoves(['b0-a2', 'a6-a5', 'a2-c3', 'a5-a4', 'c3-e2'],
+                   function() { done() });
+    });
+});
+
 describe('A pawn', function() {
     it('can move forward', function(done) {
         checkMoves(['a1-a2', 'a6-a5', 'b1-b3'], function() { done() });
