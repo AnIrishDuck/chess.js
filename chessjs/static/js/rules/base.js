@@ -1,4 +1,4 @@
-define([], function() {
+define(["underscore"], function(_) {
 
 var BaseRules = {};
 
@@ -20,6 +20,7 @@ BaseRules.lastRank = ['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'];
 /* Determines the valid moves for a given piece. This function simply uses
    standard rules for determing piece movement. */
 BaseRules.validMoves = function(piece) {
+
     var enemyAt = function(x, y) {
         return (piece.board.validSquare(x, y) &&
                 piece.board.occupied(x, y) &&

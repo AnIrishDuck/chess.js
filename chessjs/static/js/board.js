@@ -1,6 +1,6 @@
 /* NOTE: for some bizarre reason, if kinetic is included first RequireJS goes
    bonkers. */
-define(["rules/base"], function(BaseRules) {
+define(["rules/base", "underscore"], function(BaseRules, _) {
 
 var Piece = function(board, player, type, x, y) {
     var self = this;
@@ -71,6 +71,26 @@ var Board = function() {
     self.moves = [];
 }
 Board.moveOrder = ["white", "black"];
+
+/* Parses a text moves like 'e2-b4' or 'e7-e8q' into an object. */
+Board.prototype.parseMove = function(move) {
+    var self = this;
+
+    var result = {};
+    var rows = "abcdefgh";
+    var row = rows.indexOf(move[0]);
+    var col = parseInt(move[1]);
+    result.mover = self.occupant(row, col);
+    result.x = rows.indexOf(move[3]);
+    result.y = parseInt(move[4]);
+    if(move.length === 6) {
+        result.promo = move[5];
+    }
+    else {
+        result.promo = null;
+    }
+    return result;
+}
 
 /* Called to initialize the board. */
 Board.prototype.setup = function() {

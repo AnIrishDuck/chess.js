@@ -287,26 +287,9 @@ BoardUI.prototype.update = function() {
 /* Replays the given list of moves for the player. */
 BoardUI.prototype.replay = function(moves) {
     var self = this;
-
-    var parseMove = function(move) {
-        var result = {};
-        var rows = "abcdefgh";
-        var row = rows.indexOf(move[0]);
-        var col = parseInt(move[1]);
-        result.mover = self.obj.occupant(row, col);
-        result.x = rows.indexOf(move[3]);
-        result.y = parseInt(move[4]);
-        if(move.length === 6) {
-            result.promo = move[5];
-        }
-        else {
-            result.promo = null;
-        }
-        return result;
-    }
     _.each(moves, function(text) {
         console.log("UPDATE", text);
-        var move = parseMove(text);
+        var move = self.obj.parseMove(text);
         move.mover.ui.moveTo(move.x, move.y, move.promo, moves.length === 1);
     });
 }

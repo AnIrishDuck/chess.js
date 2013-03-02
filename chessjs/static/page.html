@@ -9,6 +9,9 @@
     <script src="js/require.js"></script>
     <script>
     require.config({
+        shim: {
+            'underscore': {exports: '_'}
+        },
         baseUrl: "js/",
     });
     require(["ui"], function(BoardUI) {
