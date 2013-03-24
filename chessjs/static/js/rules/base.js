@@ -193,7 +193,11 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
 }
 
 /* Defines all valid moves, excluding moves that leave the king in check at the
- * end of the turn. */
+ * end of the turn.
+ * NOTE: this cannot be collapsed into validMovesIgnoringCheck because of the
+ * infinite self-recursion that follows from the call below to inCheck (i.e.
+ * validMoves calles inCheck, which calls validMoves for the other player,
+ * which calls inCheck for the other player ...)*/
 BaseRules.validMoves = function(piece) {
     var possible = BaseRules.validMovesIgnoringCheck(piece);
     /* This isn't terribly efficient, but it's simple and it clearly works. */
