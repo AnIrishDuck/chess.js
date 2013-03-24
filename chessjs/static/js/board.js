@@ -69,6 +69,7 @@ var Board = function() {
 
     self.pieces = [];
     self.moves = [];
+    self.rules = BaseRules;
 }
 Board.moveOrder = ["white", "black"];
 

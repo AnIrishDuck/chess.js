@@ -66,6 +66,12 @@ describe('A king', function() {
         checkMoves(['d1-d3', 'a6-a5', 'd0-d1', 'a5-a4', 'd1-c2'],
                    function() { done() });
     });
+    it('can be placed into check', function(done) {
+        checkMoves(['d1-d3', 'c6-c4', 'e0-a4'], function(board) {
+            should.equal(board.rules.inCheck("black", board), true);
+            done();
+        });
+    });
 });
 
 describe('A queen', function() {

@@ -17,6 +17,22 @@ BaseRules.pawnPromote = {white: BaseRules.startRank.black,
    r: Rook */
 BaseRules.lastRank = ['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'];
 
+BaseRules.inCheck = function(player, board) {
+    var isEnemy = function(p) { return p.player !== player }
+    var enemyPieces = _.filter(board.pieces, isEnemy)
+    var valid = _.map(enemyPieces, BaseRules.validMoves);
+    var threatenKing = _.filter(valid, function(moves) {
+        return _.any(moves.captures, function(move) {
+            var takes = board.occupant(move.x, move.y);
+            if(takes !== undefined) {
+                return takes.type === 'k' && takes.player === player;
+            }
+            else { return false }
+        });
+    });
+    return threatenKing.length > 0;
+}
+
 /* Determines the valid moves for a given piece. This function simply uses
    standard rules for determing piece movement. */
 BaseRules.validMoves = function(piece) {
