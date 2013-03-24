@@ -61,6 +61,23 @@ describe('Basic rules', function() {
     });
 });
 
+describe('A board', function() {
+    it('can be copied; the pieces of the copy are independent',
+       function(done) {
+        rules.withRules("base", function(Board, BaseRules) {
+            var board = new Board();
+            board.setup();
+            var copy = board.copy();
+            var startX = board.pieces[0].x;
+            copy.pieces[0].x += 1;
+            should.equal(board.pieces[0].x, startX);
+            copy.pieces = copy.pieces.slice(2, 5);
+            should.equal(board.pieces.length, 32);
+            done();
+        });
+    });
+});
+
 describe('A king', function() {
     it('moves only to adjacent squares', function(done) {
         checkMoves(['d1-d3', 'a6-a5', 'd0-d1', 'a5-a4', 'd1-c2'],

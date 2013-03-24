@@ -104,6 +104,23 @@ Board.prototype.setup = function() {
     });
 }
 
+/* Called to create a copy of one board. Pieces are actually duplicated, so
+ * this is a combination shallow/deep copy. The list of previous moves is
+ * simply shallow copied, but that's never modified anyway. */
+Board.prototype.copy = function() {
+    var self = this;
+    var copy = new Board();
+
+    copy.turn = self.turn;
+    copy.pieces = _.map(self.pieces, function(p) {
+        return new Piece(copy, p.player, p.type, p.x, p.y);
+    });
+    copy.moves = _.toArray(self.moves);
+    copy.rules = BaseRules;
+
+    return copy;
+}
+
 /* This function is called once the board has been set up. */
 Board.prototype.onReady = function() {}
 
