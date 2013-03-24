@@ -158,10 +158,22 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
             var neighbors = _.map(delta2d, function(sq) {
                 return moveBy(sq.dx, sq.dy);
             });
+            /* Starting criteria - a king can only castle with a rook if
+             * neither piece has moved. */
             var castles = _.filter([0, 7], function(rookPos) {
                 var rook = piece.board.occupant(rookPos, piece.y);
                 return (piece.lastMove === undefined &&
                         rook !== undefined && rook.lastMove === undefined);
+            });
+            /* Further criteria - a king and rook cannot castle if there are
+             * intermediate pieces */
+            castles = _.filter(castles, function(rookPos) {
+                var positions = [rookPos, piece.x];
+                positions.sort();
+                var between = _.range(positions[0] + 1, positions[1] - 1)
+                return _.every(between, function(x) {
+                    return !piece.board.occupied(x, piece.y);
+                });
             });
             var castleMoves = {captures: []};
             castleMoves.moves = _.map(castles, function(rookPos) {

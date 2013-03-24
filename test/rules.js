@@ -83,6 +83,13 @@ describe('A king', function() {
         checkMoves(['d1-d3', 'a6-a5', 'd0-d1', 'a5-a4', 'd1-c2'],
                    function() { done() });
     });
+    it('can castle if the intermediate squares are empty', function(done) {
+        checkInvalid([], 'd0-b0', function() {});
+        checkInvalid(['d1-d3', 'a6-a4', 'c0-d1', 'a4-a3'],
+                     'd0-b0', function() {});
+        checkMoves(['d1-d3', 'a6-a4', 'c0-d1', 'a4-a3',
+                    'b0-a2', 'h6-h4', 'd0-b0'], function() { done() });
+    });
     it('can be placed into check', function(done) {
         checkMoves(['d1-d3', 'c6-c4', 'e0-a4'], function(board) {
             should.equal(board.rules.inCheck("black", board), true);
