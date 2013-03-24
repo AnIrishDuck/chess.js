@@ -89,6 +89,16 @@ describe('A king', function() {
             done();
         });
     });
+    it('cannot move into check', function(done) {
+        checkInvalid(['d1-d3', 'e6-e4', 'h1-h3', 'f7-b3'], 'd0-d1', done);
+    });
+    it('cannot be placed into check by the movement of another piece',
+       function(done) {
+        checkInvalid(['d1-d3', 'd6-d4', 'h1-h3', 'e7-a3'], 'c1-c2', done);
+    });
+    it('cannot remain in check if another piece moves', function(done) {
+        checkInvalid(['d1-d3', 'c6-c4', 'e0-a4'], 'h6-h5', done);
+    });
 });
 
 describe('A queen', function() {

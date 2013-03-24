@@ -20,7 +20,7 @@ BaseRules.lastRank = ['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'];
 BaseRules.inCheck = function(player, board) {
     var isEnemy = function(p) { return p.player !== player }
     var enemyPieces = _.filter(board.pieces, isEnemy)
-    var valid = _.map(enemyPieces, BaseRules.validMoves);
+    var valid = _.map(enemyPieces, BaseRules.validMovesIgnoringCheck);
     var threatenKing = _.filter(valid, function(moves) {
         return _.any(moves.captures, function(move) {
             var takes = board.occupant(move.x, move.y);
@@ -33,9 +33,9 @@ BaseRules.inCheck = function(player, board) {
     return threatenKing.length > 0;
 }
 
-/* Determines the valid moves for a given piece. This function simply uses
-   standard rules for determing piece movement. */
-BaseRules.validMoves = function(piece) {
+/* Determines the valid moves for a given piece. May return moves that will
+ * leave the king in check. */
+BaseRules.validMovesIgnoringCheck = function(piece) {
 
     var enemyAt = function(x, y) {
         return (piece.board.validSquare(x, y) &&
@@ -189,8 +189,25 @@ BaseRules.validMoves = function(piece) {
             return combine.apply(undefined, jumps);
         }
     }
-
     return moves[piece.type]();
+}
+
+/* Defines all valid moves, excluding moves that leave the king in check at the
+ * end of the turn. */
+BaseRules.validMoves = function(piece) {
+    var possible = BaseRules.validMovesIgnoringCheck(piece);
+    /* This isn't terribly efficient, but it's simple and it clearly works. */
+    var notInCheck = function(move) {
+        var copy = piece.board.copy();
+        var copiedPiece = copy.occupant(piece.x, piece.y);
+        copiedPiece.moveTo(move.x, move.y, null);
+        return !BaseRules.inCheck(piece.player, copy);
+    }
+    var legal = {
+        moves: _.filter(possible.moves, notInCheck),
+        captures: _.filter(possible.captures, notInCheck)
+    }
+    return legal;
 }
 
 /* This function is called to determine the starting pieces on the board. */
