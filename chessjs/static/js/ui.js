@@ -261,12 +261,9 @@ var BoardUI = function(url, stage) {
 }
 BoardUI.moveOrder = ["white", "black"];
 BoardUI.playerText = {
-    white: {white: "Your turn, White.", black: "Waiting on Black..."},
-    black: {black: "Your turn, Black.", white: "Waiting on White..."},
-    spec: {
-        white: "Spectating: White to move.",
-        black: "Spectating: Black to move."
-    }
+    white: {white: "Your turn.", black: "Waiting on Black...", me: "White"},
+    black: {black: "Your turn.", white: "Waiting on White...", me: "Black"},
+    spec: { white: "White to move.", black: "Black to move.", me: "Spectator" }
 }
 
 /* This function is called once the board has been set up. */
@@ -280,7 +277,22 @@ BoardUI.prototype.update = function() {
         self.player = data.player;
         self.replay(data.moves.slice(self.obj.turn));
         var active = self.obj.activePlayer();
-        $("#player").html(BoardUI.playerText[self.player][active]);
+        var text = BoardUI.playerText[self.player][active];
+        var cap = function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
+        var start = BoardUI.playerText[self.player].me + ": ";
+        if(self.obj.currentState() === "check") {
+            text = "Check! " + text;
+        }
+        if(self.obj.currentState() === "draw") {
+            text = "Draw. No legal moves for " + self.obj.activePlayer() + ".";
+            start = "";
+        }
+        if(self.obj.currentState() === "lost") {
+            var winner = cap(self.obj.inactivePlayer());
+            text = "Checkmate. " + winner + " wins.";
+            start = "";
+        }
+        $("#player").html(start + text);
     });
 }
 

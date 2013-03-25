@@ -140,6 +140,15 @@ Board.prototype.activePlayer = function() {
     return Board.moveOrder[this.turn % Board.moveOrder.length];
 }
 
+/* Returns the player that is waiting. */
+Board.prototype.inactivePlayer = function() {
+    return Board.moveOrder[(this.turn + 1) % Board.moveOrder.length];
+}
+
+Board.prototype.currentState = function() {
+    return this.rules.currentState(this);
+}
+
 /* Returns true if the given square coordinates are valid. */
 Board.prototype.validSquare = function(x, y) {
     return x >= 0 && y >= 0 && x < 8 && y < 8;
