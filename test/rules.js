@@ -78,6 +78,39 @@ describe('A board', function() {
     });
 });
 
+describe('A player', function() {
+    it('can be put in checkmate', function(done) {
+        var simpleMate = ['d1-d3', 'h6-h5', 'e0-a4', 'h5-h4', 'c0-f3', 'h4-h3',
+                          'f3-c6']
+        checkMoves(simpleMate, function(board) {
+            should.equal(board.rules.currentState(board), "lost");
+            done();
+        });
+    });
+    it('can force a draw when they cannot move', function(done) {
+        rules.withRules("base", function(Board, BaseRules) {
+            var old = BaseRules.startingPieces;
+            try {
+                BaseRules.startingPieces = function(board, Piece) {
+                    var pieces = [];
+                    pieces.push(new Piece(board, "white", "k", 0, 0));
+                    pieces.push(new Piece(board, "black", "p", 0, 1));
+                    pieces.push(new Piece(board, "black", "p", 1, 2));
+                    pieces.push(new Piece(board, "black", "k", 2, 0));
+                    return pieces;
+                }
+                var board = new Board();
+                board.setup();
+                should.equal(board.rules.currentState(board), "draw");
+                done();
+            }
+            finally {
+                BaseRules.startingPieces = old;
+            }
+        });
+    });
+});
+
 describe('A king', function() {
     it('moves only to adjacent squares', function(done) {
         checkMoves(['d1-d3', 'a6-a5', 'd0-d1', 'a5-a4', 'd1-c2'],

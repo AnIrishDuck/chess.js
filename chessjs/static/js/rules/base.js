@@ -240,6 +240,24 @@ BaseRules.validMoves = function(piece) {
     return legal;
 }
 
+BaseRules.currentState = function(board) {
+    var check = BaseRules.inCheck(board.activePlayer(), board);
+    var isMine = function(p) { return p.player === board.activePlayer() }
+    var myPieces = _.filter(board.pieces, isMine);
+    var possible = _.map(myPieces, BaseRules.validMoves);
+    var x = _.filter(myPieces, function(p) { return p.type === "k" });
+    possible = _.reduce(possible, function(count, unit) {
+        return count + unit.moves.length + unit.captures.length;
+    }, 0);
+    if(possible === 0) {
+        return check ? "lost" : "draw";
+    }
+    if(check) {
+        return "check"
+    }
+    return null;
+}
+
 /* This function is called to determine the starting pieces on the board. */
 BaseRules.startingPieces = function(board, Piece) {
     var pieces = [];
