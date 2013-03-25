@@ -176,7 +176,8 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
             var castles = _.filter([0, 7], function(rookPos) {
                 var rook = piece.board.occupant(rookPos, piece.y);
                 return (piece.lastMove === undefined &&
-                        rook !== undefined && rook.lastMove === undefined);
+                        rook !== undefined && rook.type === "r" &&
+                        rook.lastMove === undefined);
             });
             /* Further criteria - a king and rook cannot castle if there are
              * intermediate pieces */
