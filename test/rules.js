@@ -90,6 +90,10 @@ describe('A king', function() {
         checkMoves(['d1-d3', 'a6-a4', 'c0-d1', 'a4-a3',
                     'b0-a2', 'h6-h4', 'd0-b0'], function() { done() });
     });
+    it('cannot castle through check', function(done) {
+        checkInvalid(['d1-d3', 'e6-e4', 'c0-g4', 'e7-e6',
+                      'b0-a2', 'e6-g4'], 'd0-b0', function() { done() });
+    });
     it('can be placed into check', function(done) {
         checkMoves(['d1-d3', 'c6-c4', 'e0-a4'], function(board) {
             should.equal(board.rules.inCheck("black", board), true);

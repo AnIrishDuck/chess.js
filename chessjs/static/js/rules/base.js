@@ -33,6 +33,15 @@ BaseRules.inCheck = function(player, board) {
     return threatenKing.length > 0;
 }
 
+/* Copy the board and apply the given move to the copy.
+ * NOTE: ignores promotions. */
+var boardWithMove = function(piece, move) {
+    var copy = piece.board.copy();
+    var copiedPiece = copy.occupant(piece.x, piece.y);
+    copiedPiece.moveTo(move.x, move.y, null);
+    return copy;
+}
+
 /* Determines the valid moves for a given piece. May return moves that will
  * leave the king in check. */
 BaseRules.validMovesIgnoringCheck = function(piece) {
@@ -158,6 +167,10 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
             var neighbors = _.map(delta2d, function(sq) {
                 return moveBy(sq.dx, sq.dy);
             });
+            var direction = function(rookPos) {
+                var dxToRook = piece.x - rookPos;
+                return -Math.floor((Math.abs(dxToRook) / dxToRook));
+            }
             /* Starting criteria - a king can only castle with a rook if
              * neither piece has moved. */
             var castles = _.filter([0, 7], function(rookPos) {
@@ -175,12 +188,15 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
                     return !piece.board.occupied(x, piece.y);
                 });
             });
+            /* Final criteria - a king cannot castle through check. */
+            castles = _.filter(castles, function(rookPos) {
+                var middle = piece.x + direction(rookPos);
+                var copy = boardWithMove(piece, {x: middle, y: piece.y});
+                return !BaseRules.inCheck(piece.player, copy);
+            });
             var castleMoves = {captures: []};
             castleMoves.moves = _.map(castles, function(rookPos) {
-                var dxToRook = piece.x - rookPos;
-                var dx = -Math.floor(2 * (Math.abs(dxToRook) / dxToRook));
-                return {x: piece.x + dx,
-                        y: piece.y}
+                return {x: piece.x + direction(rookPos) * 2, y: piece.y}
             });
             var allMoves = _.flatten([neighbors, castleMoves]);
             return combine.apply(undefined, allMoves);
@@ -214,9 +230,7 @@ BaseRules.validMoves = function(piece) {
     var possible = BaseRules.validMovesIgnoringCheck(piece);
     /* This isn't terribly efficient, but it's simple and it clearly works. */
     var notInCheck = function(move) {
-        var copy = piece.board.copy();
-        var copiedPiece = copy.occupant(piece.x, piece.y);
-        copiedPiece.moveTo(move.x, move.y, null);
+        var copy = boardWithMove(piece, move);
         return !BaseRules.inCheck(piece.player, copy);
     }
     var legal = {
