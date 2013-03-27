@@ -310,6 +310,7 @@ BoardUI.prototype.replay = function(moves) {
     _.each(moves, function(text) {
         console.log("UPDATE", text);
         var move = self.obj.parseMove(text);
+        $("#" + self.obj.activePlayer() + "-moves").append(text + "<br />");
         move.mover.ui.moveTo(move.x, move.y, move.promo, moves.length === 1);
     });
 }
