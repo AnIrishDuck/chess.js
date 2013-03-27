@@ -293,6 +293,7 @@ BoardUI.prototype.update = function() {
             start = "";
         }
         $("#player").html(start + text);
+        $("#rules").html("rules: " + data.rules);
     });
 }
 

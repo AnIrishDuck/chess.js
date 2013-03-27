@@ -9,7 +9,8 @@
     $(document).ready(function() {
         $("#new").click(function() {
             $("#links").css("visibility", "visible");
-            $.post("/new", function(data) {
+            var rules = $("#rules").val();
+            $.post("/new?rules=" + rules, function(data) {
                 _.each(_.keys(data), function(k) {
                     var rel = "/game#" + data[k];
                     $("#" + k).html(rel).attr("href", rel);
@@ -35,7 +36,7 @@
     #box {
         font-family: 'Titillium Web', sans-serif; font-size: 50px;
         font-weight: 700;
-        width: 200px; height: 300px;
+        width: 200px; height: 350px;
         text-align: center;
         margin-top: -200px;
         margin-left: -100px;
@@ -69,7 +70,7 @@
         text-decoration: none;
         width: 500px;
         margin-left: -250px;
-        margin-top: 125px;
+        margin-top: 175px;
         padding: 5px;
         border: 4px #aaa solid;
         position: absolute;
@@ -83,6 +84,9 @@
         text-decoration: none;
         color: #c00;
     }
+    #rules {
+        font-family: 'Titillium Web', sans-serif; font-size: 25px;
+    }
     </style>
 </head>
 <body>
@@ -92,6 +96,9 @@
             <div id="player">
                 chess.js <br />
                 <a id="new" href="#">New Game?</a>
+                <select name="rules" id="rules">
+                    <option value="base" selected>Standard Rules</option>
+                </select>
             </div>
         </div>
         <div id="links">

@@ -57,6 +57,7 @@ app.post("/new", function(req, res) {
         .set(ids.white, "white:" + root)
         .set(ids.black, "black:" + root)
         .set(ids.spec, "spec:" + root)
+        .set(root + ":rules", req.query.rules)
         .exec(function(err, replies) {
             res.json(ids);
         })
@@ -74,6 +75,7 @@ app.all(route, function(req, res, next) {
         }
         else {
             var info = replies.match(gameID);
+            req.rules = info[2] + ":rules";
             req.id = info[2] + ":moves";
             req.player = info[1];
             console.log("%s => %s %s", req.params[0], req.player, req.id);
@@ -87,8 +89,13 @@ app.all(route, function(req, res, next) {
 });
 
 var sendMoves = function(req, res) {
+    var game = {player: req.player}
     db.lrange(req.id, 0, -1, function(err, replies) {
-        res.json({"moves" : replies, "player": req.player});
+        game.moves = replies;
+        db.get(req.rules, function(err, reply) {
+            game.rules = reply;
+            res.json(game);
+        });
     });
 }
 
