@@ -305,12 +305,17 @@ BoardUI.prototype.update = function() {
 }
 
 /* Replays the given list of moves for the player. */
-BoardUI.prototype.replay = function(moves) {
+BoardUI.prototype.replay = function(moves, updateLog) {
+    updateLog = updateLog !== undefined ? updateLog : true;
     var self = this;
     _.each(moves, function(text) {
         console.log("UPDATE", text);
         var move = self.obj.parseMove(text);
-        $("#" + self.obj.activePlayer() + "-moves").append(text + "<br />");
+        if(updateLog) {
+            var id = "#" + self.obj.activePlayer() + "-moves";
+            var html ='<a href="#' + self.obj.turn + '">' + text + "</a><br />";
+            $(id).append(html);
+        }
         move.mover.ui.moveTo(move.x, move.y, move.promo, moves.length === 1);
     });
 }

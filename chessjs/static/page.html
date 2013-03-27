@@ -7,6 +7,14 @@
     <script src="js/jquery-1.9.1.js"></script>
     <script src="js/underscore.js"></script>
     <script src="js/require.js"></script>
+    <style>
+    /* This css is jank but it works and I don't feel like prettying it up
+     * right now. */
+    #moves a {
+        text-decoration: none;
+        color: #333;
+    }
+    </style>
     <script>
     require.config({
         shim: {
@@ -14,7 +22,33 @@
         },
         baseUrl: "js/",
     });
+
     require(["ui"], function(BoardUI) {
+        var previewStage = new Kinetic.Stage({
+            container: "preview",
+            width: 200,
+            height: 200
+        });
+
+        var hidePreview = function() {
+            previewStage.clear();
+            previewStage.removeChildren();
+            $("#preview").hide();
+        }
+
+        hidePreview();
+        var showPreview = function(url, ix, y) {
+            $("#preview").show();
+            $("#preview").css("top", y);
+            $.get(url, function(data) {
+                var preview = new BoardUI(url, previewStage, 25);
+                preview.onReady = function() {
+                    preview.replay(data.moves.slice(0, ix), false);
+                    preview.replay([data.moves[ix]], false);
+                }
+            });
+        }
+
         var stage = new Kinetic.Stage({
             container: "board",
             width: 700,
@@ -24,20 +58,35 @@
         var url = "/" + window.location.hash.slice(1);
         var board = new BoardUI(url, stage);
 
-        board.onReady = function() {
+        var update = function() {
             board.update();
+            var moves = $("#moves").children().children().filter("a");
+            moves.each(function() {
+                var ix = parseInt(this.href.split("#")[1]);
+                $(this).unbind();
+                $(this).mouseover(function() {
+                    var y = Math.max($(this).position().top - 80, 10);
+                    showPreview(url, ix, y);
+                });
+                $(this).mouseout(function() {
+                    hidePreview();
+                });
+            });
+        }
 
+        board.onReady = function() {
             var interval = window.setInterval(function() {
-                board.update();
+                update();
             }, 2000);
         }
     });
-</script>
+    </script>
 </head>
 <body>
 <div id="board"></div>
+<div id="preview" style="position: absolute; left: 415px; top: 10px; background: #000;"></div>
 <div id="move-box"
-     style="position: absolute; left: 625px; top: 10px; font-family: 'Titillium Web', sans-serif; font-size: 30px; text-align: center; background: #aaa; padding: 5px; width: 125px;">
+     style="position: absolute; left: 625px; top: 10px; font-family: 'Titillium Web', sans-serif; font-size: 30px; text-align: center; background: #aaa; padding: 5px; width: 125px; border: 2px solid #555;">
     Moves
     <div id="moves" style="font-size: 20px;">
         <div id="white-moves" style="float: left;">
