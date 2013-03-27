@@ -52,15 +52,6 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
                 piece.board.occupant(x, y).player !== piece.player);
     }
 
-    var steal = function(sq) {
-        var attack = {x: sq.x, y: sq.y}
-        var otherType = piece.board.occupant(sq.x, sq.y).type;
-        if(piece.type !== otherType && piece.type !== 'k') {
-            attack.promote = [piece.type, otherType]
-        }
-        return attack
-    }
-
     var moveBy = function(dx, dy) {
         var x = piece.x + dx; var y = piece.y + dy;
         var sq = {x: x, y: y};
@@ -70,7 +61,7 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
         }
         if(piece.board.occupied(x, y)) {
             if(enemyAt(x, y)) {
-                return {moves: [], captures: [steal(sq)]};
+                return {moves: [], captures: [sq]};
             }
             else { return noActions }
         }
@@ -89,7 +80,7 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
         }
 
         if(enemyAt(x, y)) {
-            val.captures = [steal({x: x, y: y})];
+            val.captures = [{x: x, y: y}];
         }
 
         return val;
@@ -114,7 +105,7 @@ BaseRules.validMovesIgnoringCheck = function(piece) {
                 return {x: piece.x + dx, y: piece.y + dy}
             });
             var hasEnemy = function(s) { return enemyAt(s.x, s.y) }
-            captures = _.map(_.filter(captures, hasEnemy), steal);
+            captures = _.filter(captures, hasEnemy);
 
             var enPassant = _.filter([-1, 1], function(dx) {
                 var other = piece.board.occupant(piece.x + dx, piece.y);
