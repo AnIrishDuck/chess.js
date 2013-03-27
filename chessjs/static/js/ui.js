@@ -1,14 +1,13 @@
 define(['board', 'kinetic'], function(Board, Kinetic) {
 
-var SIZE = 75;
-
 var PieceUI = function(board, obj) {
     var self = this;
     self.obj = obj;
     self.board = board;
 
     self.proxy = new Kinetic.Image({
-        x: obj.x * SIZE, y: obj.y * SIZE, width: SIZE, height: SIZE,
+        x: obj.x * self.board.size, y: obj.y * self.board.size,
+        width: self.board.size, height: self.board.size,
         image: PieceUI.imgs[obj.player][obj.type]
     });
 
@@ -63,11 +62,11 @@ PieceUI.prototype.moveTo = function(x, y, promotion, animate) {
     self.obj.ifCastle(x, y, function(rook, rookTo) {
         if(animate) {
             rook.ui.proxy.transitionTo({
-                x: rookTo * SIZE, duration: moveTime
+                x: rookTo * self.board.size, duration: moveTime
             });
         }
         else {
-            rook.ui.proxy.setX(rookTo * SIZE);
+            rook.ui.proxy.setX(rookTo * self.board.size);
         }
     });
 
@@ -89,13 +88,13 @@ PieceUI.prototype.moveTo = function(x, y, promotion, animate) {
 
     if(animate) {
         self.proxy.transitionTo({
-            x: x * SIZE, y: y * SIZE, duration: moveTime,
-            callback: doUpdates
+            x: x * self.board.size, y: y * self.board.size,
+            duration: moveTime, callback: doUpdates
         });
     }
     else {
-        self.proxy.setX(x * SIZE);
-        self.proxy.setY(y * SIZE);
+        self.proxy.setX(x * self.board.size);
+        self.proxy.setY(y * self.board.size);
         doUpdates();
     }
 }
@@ -110,8 +109,9 @@ PieceUI.prototype.addMoveUI = function(layer) {
         document.body.style.cursor = 'pointer';
         var highlight = function(x, y, color, opacity) {
             var hi = new Kinetic.Rect({
-                x: x * SIZE, y: y * SIZE,
-                width: SIZE, height: SIZE, fill: color, opacity: opacity
+                x: x * self.board.size, y: y * self.board.size,
+                width: self.board.size, height: self.board.size,
+                fill: color, opacity: opacity
             })
             layer.add(hi);
             return hi;
@@ -153,7 +153,7 @@ PieceUI.prototype.addPromoUI = function(layer, move) {
     var self = this;
 
     var OPTION_SIZE = 25;
-    var start = {x: move.x * SIZE, y: move.y * SIZE};
+    var start = {x: move.x * self.board.size, y: move.y * self.board.size};
 
     layer.add(new Kinetic.Rect({
         x: start.x - 1, y: start.y - 1,
@@ -176,8 +176,8 @@ PieceUI.prototype.addPromoUI = function(layer, move) {
         layer.add(demo);
         demo.moveToBottom();
         var demoImg = new Kinetic.Image({
-            x: move.x * SIZE, y: move.y * SIZE,
-            width: SIZE, height: SIZE, image: img
+            x: move.x * self.board.size, y: move.y * self.board.size,
+            width: self.board.size, height: self.board.size, image: img
         });
         option.on("click", function() {
             self.postMove(move.x, move.y, t);
@@ -195,11 +195,12 @@ PieceUI.prototype.addPromoUI = function(layer, move) {
     layer.draw();
 }
 
-var BoardUI = function(url, stage) {
+var BoardUI = function(url, stage, size) {
     var self = this;
 
     self.url = url;
     self.stage = stage;
+    self.size = size || 75;
 
     var board = new Kinetic.Layer();
     stage.add(board);
@@ -208,7 +209,8 @@ var BoardUI = function(url, stage) {
         _.each(_.range(8), function(sx) {
             var checker = (sx + sy) % 2 == 0 ? "white" : "#444";
             var square = new Kinetic.Rect({
-                x: (sx * SIZE), y: (sy * SIZE), width: SIZE, height: SIZE,
+                x: (sx * self.size), y: (sy * self.size),
+                width: self.size, height: self.size,
                 fill: checker, stroke: "grey", strokeWidth: 2
             });
             square.on("click", function() {
