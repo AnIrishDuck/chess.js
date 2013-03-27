@@ -198,7 +198,6 @@ PieceUI.prototype.addPromoUI = function(layer, move) {
 var BoardUI = function(url, stage) {
     var self = this;
 
-    self.obj = new Board();
     self.url = url;
     self.stage = stage;
 
@@ -241,12 +240,18 @@ var BoardUI = function(url, stage) {
     }));
 
     var setup = function() {
-        self.obj.setup();
-        _.each(self.obj.pieces, function(p) {
-            p.ui = new PieceUI(self, p);
+        $.get(self.url, function(data) {
+            self.rules = data.rules;
+            require(['rules/' + self.rules], function(RuleSet) {
+                self.obj = new Board(RuleSet);
+                self.obj.setup();
+                _.each(self.obj.pieces, function(p) {
+                    p.ui = new PieceUI(self, p);
+                });
+                stage.draw();
+                self.onReady();
+            });
         });
-        stage.draw();
-        self.onReady();
     }
     var setupCb = _.after(2 * 6, setup);
 

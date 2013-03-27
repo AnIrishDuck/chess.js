@@ -28,7 +28,7 @@ var noMoveTo = function(piece, move) {
 
 var checkMoves = function(moves, cont) {
     rules.withRules("base", function(Board, BaseRules) {
-        var board = new Board();
+        var board = new Board(BaseRules);
         board.setup();
         _.each(moves, function(text, ix) {
             var parsed = board.parseMove(text);
@@ -65,7 +65,7 @@ describe('A board', function() {
     it('can be copied; the pieces of the copy are independent',
        function(done) {
         rules.withRules("base", function(Board, BaseRules) {
-            var board = new Board();
+            var board = new Board(BaseRules);
             board.setup();
             var copy = board.copy();
             var startX = board.pieces[0].x;
@@ -99,7 +99,7 @@ describe('A player', function() {
                     pieces.push(new Piece(board, "black", "k", 2, 0));
                     return pieces;
                 }
-                var board = new Board();
+                var board = new Board(BaseRules);
                 board.setup();
                 should.equal(board.rules.currentState(board), "draw");
                 done();

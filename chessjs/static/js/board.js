@@ -62,14 +62,14 @@ Piece.prototype.moveTo = function(x, y, promotion) {
     self.board.turn += 1;
 }
 
-var Board = function() {
+var Board = function(rules) {
     var self = this;
 
     self.turn = 0;
 
     self.pieces = [];
     self.moves = [];
-    self.rules = BaseRules;
+    self.rules = rules;
 }
 Board.moveOrder = ["white", "black"];
 
@@ -96,9 +96,9 @@ Board.prototype.parseMove = function(move) {
 /* Called to initialize the board. */
 Board.prototype.setup = function() {
     var self = this;
-    _.each(BaseRules.startingPieces(self, Piece), function(p) {
+    _.each(self.rules.startingPieces(self, Piece), function(p) {
         p.validMoves = function() {
-            return BaseRules.validMoves(this);
+            return self.rules.validMoves(this);
         }
         self.pieces.push(p);
     });
@@ -116,7 +116,7 @@ Board.prototype.copy = function() {
         return new Piece(copy, p.player, p.type, p.x, p.y);
     });
     copy.moves = _.toArray(self.moves);
-    copy.rules = BaseRules;
+    copy.rules = self.rules;
 
     return copy;
 }
