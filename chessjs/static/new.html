@@ -24,6 +24,7 @@
      * right now. */
     body {
         background-image: url("pieces/bg.png");
+        overflow: hidden;
     }
     #horizon {
         position: absolute;
@@ -88,6 +89,19 @@
         margin-top: 10px;
         font-family: 'Titillium Web', sans-serif; font-size: 25px;
     }
+    #footer {
+        position: absolute;
+        top: 100%;
+        margin-top: -55px;
+        width: 100%;
+        text-align: center;
+        font-family: 'Titillium Web', sans-serif; font-size: 18px;
+        color: #555;
+    }
+    #footer a {
+        color: #AF8937;
+        text-decoration: none;
+    }
     </style>
 </head>
 <body>
@@ -120,6 +134,12 @@
                 </tr>
             </table>
         </div>
+    </div>
+    <div id="footer">
+        (c) Frank Murphy 2013. Licensed under AGPL. <br />
+        Piece Graphics courtesy of Wikipedia.
+        Background images from
+        <a href="http://www.subtlepatterns.com">www.subtlepatterns.com</a>
     </div>
 </body>
 </html>
