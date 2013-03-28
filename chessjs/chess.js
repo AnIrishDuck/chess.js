@@ -7,10 +7,27 @@ var express = require("express");
 
 var app = express();
 
-var db = redis.createClient();
-db.select(8, function(err, replies) {
-    app.listen(3000);
-    console.log("Listening on port 3000.");
+var startup = function(db) {
+    db.select(8, function(err, replies) {
+        app.listen(8080);
+        console.log("Listening on port 8080.");
+    });
+}
+
+if(process.env['DOTCLOUD_PROJECT'] !== undefined) {
+    var db = redis.createClient(process.env['DOTCLOUD_DATA_REDIS_PORT'],
+                                process.env['DOTCLOUD_DATA_REDIS_HOST']);
+    db.auth(process.env['DOTCLOUD_DATA_REDIS_PASSWORD'], function() {
+        startup(db);
+    });
+}
+else {
+    var db = redis.createClient();
+    startup(db);
+}
+
+db.on("error", function(err) {
+    console.log("Redis error: " + err);
 });
 
 var hex = "0123456789abcdef";
