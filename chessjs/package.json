@@ -1,0 +1,12 @@
+{
+  "name": "chess.js",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node chess"
+  },
+  "dependencies": {
+    "express": "3.1.0",
+    "redis": "*"
+  }
+}
