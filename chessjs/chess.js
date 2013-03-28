@@ -9,8 +9,8 @@ var app = express();
 
 var db = redis.createClient();
 db.select(8, function(err, replies) {
-    app.listen(3000);
-    console.log("Listening on port 3000.");
+    app.listen(8080);
+    console.log("Listening on port 8080.");
 });
 
 var hex = "0123456789abcdef";
