@@ -117,11 +117,11 @@ PieceUI.prototype.addMoveUI = function(layer) {
             return hi;
         }
 
-        highlight(self.obj.x, self.obj.y, "#ff0", 0.5);
+        highlight(self.obj.x, self.obj.y, "#ffe100", 0.75);
 
         var valid = self.obj.validMoves();
         _.each(valid.moves, function(sq) {
-            var move = highlight(sq.x, sq.y, "#0f0", 0.5);
+            var move = highlight(sq.x, sq.y, "#21a310", 0.75);
             move.on('click', function() {
                 if(sq.promote !== undefined) {
                     self.addPromoUI(self.board.moveLayer, sq);
@@ -132,7 +132,7 @@ PieceUI.prototype.addMoveUI = function(layer) {
             });
         });
         _.each(valid.captures, function(sq) {
-            var capture = highlight(sq.x, sq.y, "#f00", 0.5);
+            var capture = highlight(sq.x, sq.y, "#dd1b1b", 0.75);
             capture.on('click', function() {
                 if(sq.promote !== undefined) {
                     self.addPromoUI(self.board.moveLayer, sq);
@@ -207,11 +207,11 @@ var BoardUI = function(url, stage, size) {
 
     _.each(_.range(8), function(sy) {
         _.each(_.range(8), function(sx) {
-            var checker = (sx + sy) % 2 == 0 ? "white" : "#444";
+            var checker = (sx + sy) % 2 == 0 ? "#ffffff" : "#464c4c";
             var square = new Kinetic.Rect({
                 x: (sx * self.size), y: (sy * self.size),
                 width: self.size, height: self.size,
-                fill: checker, stroke: "grey", strokeWidth: 2
+                fill: checker, stroke: "#000000", strokeWidth: 1
             });
             square.on("click", function() {
                 self.moveLayer.removeChildren();

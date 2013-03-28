@@ -12,7 +12,26 @@
      * right now. */
     #moves a {
         text-decoration: none;
-        color: #333;
+    }
+
+    #black-moves a {
+        color: black;
+    }
+
+    #white-moves a {
+        color: white;
+        text-stroke: 1px black;
+        -webkit-text-stroke: 1px black;
+    }
+
+    #move-box {
+        position: absolute;
+        left: 625px; top: 10px;
+        font-family: 'Titillium Web', sans-serif;
+        font-size: 30px; text-align: center;
+        width: 125px; border: 2px solid #555;
+        max-height: 590px; overflow-y: scroll;
+        background: #aaa; padding: 5px;
     }
     </style>
     <script>
@@ -75,6 +94,7 @@
         }
 
         board.onReady = function() {
+            update();
             var interval = window.setInterval(function() {
                 update();
             }, 2000);
@@ -85,8 +105,7 @@
 <body>
 <div id="board"></div>
 <div id="preview" style="position: absolute; left: 415px; top: 10px; background: #000;"></div>
-<div id="move-box"
-     style="position: absolute; left: 625px; top: 10px; font-family: 'Titillium Web', sans-serif; font-size: 30px; text-align: center; background: #aaa; padding: 5px; width: 125px; border: 2px solid #555;">
+<div id="move-box">
     Moves
     <div id="moves" style="font-size: 20px;">
         <div id="white-moves" style="float: left;">
