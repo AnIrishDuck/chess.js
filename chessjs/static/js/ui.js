@@ -70,11 +70,15 @@ PieceUI.prototype.moveTo = function(x, y, promotion, animate) {
         }
     });
 
+    var taken = null;
+    self.obj.ifTake(x, y, function(piece) {
+        taken = piece;
+    });
+
     var doUpdates = function() {
-        self.obj.ifTake(x, y, function(taken) {
+        if(taken !== null) {
             taken.ui.proxy.hide();
-        });
-        self.obj.moveTo(x, y, promotion);
+        }
 
         self.proxy.setImage(PieceUI.imgs[self.obj.player][self.obj.type]);
 
@@ -85,6 +89,8 @@ PieceUI.prototype.moveTo = function(x, y, promotion, animate) {
 
         self.board.stage.draw();
     }
+
+    self.obj.moveTo(x, y, promotion);
 
     if(animate) {
         self.proxy.transitionTo({
