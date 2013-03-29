@@ -63,10 +63,15 @@
         font-size: 30px; text-align: center;
     }
 
-    #preview {
+    #preview-container {
         position: absolute; left: 50%;
         margin-left: 90px; margin-top: -410px;
         background: #ccc;
+    }
+
+    #preview-text {
+        color: #c00; font-family: 'Titillium Web', sans-serif; font-size: 12px;
+        text-align: center;
     }
 
     #info {
@@ -117,6 +122,35 @@
     #board .kineticjs-content {
         border: 2px solid #888;
     }
+
+    #fork {
+        font-family: 'Titillium Web', sans-serif; font-size: 25px;
+        font-weight: 600;
+        visibility: hidden;
+        text-decoration: none;
+        width: 340px;
+        margin-left: -175px;
+        margin-top: -150px;
+        padding: 5px;
+        border: 4px #aaa solid;
+        position: absolute;
+        left: 50%;
+        background-image: url("pieces/fg.png");
+    }
+
+    #fork table {
+        width: 500px;
+    }
+
+    #fork a {
+        text-decoration: none;
+        color: #c00;
+    }
+
+    #fork #close {
+        text-align: center;
+        font-size: 20px;
+    }
     </style>
     <script>
     require.config({
@@ -126,7 +160,7 @@
         baseUrl: "js/",
     });
 
-    require(["ui"], function(BoardUI) {
+    require(["ui", "board"], function(BoardUI, Board) {
         var previewStage = new Kinetic.Stage({
             container: "preview",
             width: 200,
@@ -137,23 +171,55 @@
         var hidePreview = function() {
             previewStage.clear();
             previewStage.removeChildren();
-            $("#preview").hide();
+            $("#preview-container").hide();
             hidden = true;
         }
 
         hidePreview();
         var showPreview = function(url, ix, y) {
             hidden = false;
-            $("#preview").css("top", y);
+            $("#preview-container").css("top", y);
             $.get(url, function(data) {
                 var preview = new BoardUI(url, previewStage, 25);
                 preview.onReady = function() {
                     preview.replay(data.moves.slice(0, ix), false);
                     if(!hidden) {
-                        $("#preview").show();
+                        $("#preview-container").show();
                         preview.replay([data.moves[ix]], false);
                     }
                 }
+            });
+        }
+
+        var fork = function(ix) {
+            var moves = board.obj.moves.slice(0, ix + 1);
+            $.post("/new?rules=" + board.rules)
+            .then(function(data) {
+                var url = function(move, ix) {
+                    var player = Board.moveOrder[ix % 2];
+                    var base = "/" + data[player];
+                    var move = Board.serializeMove(move)
+                    return base + "?move=" + move + "&turn=" + ix;
+                }
+                var urls = _.map(moves, url);
+                var reduce = function() {
+                    if(urls.length > 0) {
+                        $.post(urls.shift()).then(reduce);
+                    }
+                    else {
+                        $("#fork").css("visibility", "visible");
+                        $("#fork #close").unbind();
+                        $("#fork #close").click(function() {
+                            $("#fork").css("visibility", "hidden");
+                            return false;
+                        });
+                        _.each(_.keys(data), function(k) {
+                            var rel = "/game#" + data[k];
+                            $("#fork #" + k).html(rel).attr("href", rel);
+                        });
+                    }
+                }
+                reduce();
             });
         }
 
@@ -170,7 +236,7 @@
             board.update();
             var moves = $("#moves").children().children().filter("a");
             moves.each(function() {
-                var ix = parseInt(this.href.split("#")[1]);
+                var ix = parseInt($(this).attr("id").split("-")[1]);
                 $(this).unbind();
                 $(this).mouseover(function() {
                     var y = Math.max($(this).position().top - 80, 10);
@@ -179,6 +245,10 @@
                 });
                 $(this).mouseout(function() {
                     hidePreview();
+                });
+                $(this).click(function() {
+                    fork(ix);
+                    return false;
                 });
             });
         }
@@ -195,7 +265,12 @@
 <body>
 <div id="container">
     <div id="board" class="ui-box"></div>
-    <div id="preview" class="ui-box"></div>
+    <div id="preview-container" class="ui-box">
+        <div id="preview"></div>
+        <div id="preview-text">
+            Click to fork the game here.
+        </div>
+    </div>
     <div id="move-box" class="ui-box">
         <div id="title" class="ui-box">
             Moves
@@ -210,6 +285,26 @@
     <div id="info" class="ui-box">
         <div id="rules"></div>
         <div id="player" class="spec">Connecting...</div>
+    </div>
+    <div id="fork" class="ui-box">
+        Game Forked. New URLs:
+        <table>
+            <tr class="links">
+                <td class="uri-name">White:</td>
+                <td class="uri"><a id="white" href="#">/game#6eb7d978982f6e6e</a></td>
+            </tr>
+            <tr class="links">
+                <td class="uri-name">Black:</td>
+                <td class="uri"><a id="black" href="#">/game#6eb7d978982f6e6e</a></td>
+            </tr>
+            <tr class="links">
+                <td class="uri-name">Spectator:</td>
+                <td class="uri"><a id="spec" href="#"></game#6eb7d978982f6e6e/a></td>
+            </tr>
+        </table>
+        <div id="close">
+            <a href="#">Close This Dialog</a>
+        </div>
     </div>
 </div>
 </body>

@@ -320,7 +320,8 @@ BoardUI.prototype.replay = function(moves, updateLog) {
         var move = self.obj.parseMove(text);
         if(updateLog) {
             var id = "#" + self.obj.activePlayer() + "-moves";
-            var html ='<a href="#' + self.obj.turn + '">' + text + "</a><br />";
+            var html ='<a id="move-' + self.obj.turn + '" href="">'
+            html += text + "</a><br />";
             $(id).append(html);
         }
         move.mover.ui.moveTo(move.x, move.y, move.promo, moves.length === 1);
