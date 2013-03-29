@@ -14,6 +14,12 @@
         text-decoration: none;
     }
 
+    #move-box #title {
+        padding: 3px;
+        border: 2px solid #888;
+        background: #ccc;
+    }
+
     #black-moves a {
         color: black;
     }
@@ -27,11 +33,35 @@
     #move-box {
         position: absolute;
         left: 625px; top: 10px;
+        width: 125px; border: 2px solid #555;
+        max-height: 590px; overflow-y: auto;
+
         font-family: 'Titillium Web', sans-serif;
         font-size: 30px; text-align: center;
-        width: 125px; border: 2px solid #555;
-        max-height: 590px; overflow-y: scroll;
         background: #aaa; padding: 5px;
+    }
+
+    #preview {
+        position: absolute;
+        left: 415px; top: 10px;
+        background: #fff;
+    }
+
+    #info {
+        width: 600px;
+        font-family: 'Titillium Web', sans-serif;
+    }
+
+    #info #player {
+        font-size: 50px;
+        line-height: 50px;
+        text-align: center;
+    }
+
+    #info #rules {
+        font-size: 30px;
+        line-height: 30px;
+        text-align: center;
     }
     </style>
     <script>
@@ -103,23 +133,24 @@
     </script>
 </head>
 <body>
-<div id="board"></div>
-<div id="preview" style="position: absolute; left: 415px; top: 10px; background: #000;"></div>
-<div id="move-box">
-    Moves
-    <div id="moves" style="font-size: 20px;">
-        <div id="white-moves" style="float: left;">
+<div id="container">
+    <div id="board"></div>
+    <div id="preview" style=""></div>
+    <div id="move-box">
+        <div id="title">
+            Moves
         </div>
-        <div id="black-moves" style="float: right;">
+        <div id="moves" style="font-size: 20px;">
+            <div id="white-moves" style="float: left;">
+            </div>
+            <div id="black-moves" style="float: right;">
+            </div>
         </div>
     </div>
-</div>
-<div id="player"
-     style="font-family: 'Titillium Web', sans-serif; font-size: 50px;">
-    Connecting...
-</div>
-<div id="rules"
-    style="font-family: 'Titillium Web', sans-serif; font-size: 20px;">
+    <div id="info">
+        <div id="rules"></div>
+        <div id="player">Connecting...</div>
+    </div>
 </div>
 </body>
 </html>
