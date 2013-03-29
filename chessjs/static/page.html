@@ -20,6 +20,11 @@
         background: #ccc;
     }
 
+    .ui-box {
+        background: #aaa; padding: 5px;
+        border: 2px solid #555;
+    }
+
     #black-moves a {
         color: black;
     }
@@ -32,13 +37,12 @@
 
     #move-box {
         position: absolute;
-        left: 625px; top: 10px;
-        width: 125px; border: 2px solid #555;
+        left: 630px; top: 10px;
+        width: 125px;
         max-height: 590px; overflow-y: auto;
 
         font-family: 'Titillium Web', sans-serif;
         font-size: 30px; text-align: center;
-        background: #aaa; padding: 5px;
     }
 
     #preview {
@@ -49,19 +53,29 @@
 
     #info {
         width: 600px;
+        padding: 5px;
+        margin-top: 5px;
         font-family: 'Titillium Web', sans-serif;
     }
 
-    #info #player {
-        font-size: 50px;
-        line-height: 50px;
+    #player {
+        font-size: 40px;
+        line-height: 45px;
         text-align: center;
     }
 
-    #info #rules {
+    #rules {
         font-size: 30px;
         line-height: 30px;
         text-align: center;
+    }
+
+    #board {
+        width: 605px;
+    }
+
+    #board .kineticjs-content {
+        border: 2px solid #888;
     }
     </style>
     <script>
@@ -105,7 +119,7 @@
 
         var stage = new Kinetic.Stage({
             container: "board",
-            width: 700,
+            width: 600,
             height: 600
         });
 
@@ -139,10 +153,10 @@
 </head>
 <body>
 <div id="container">
-    <div id="board"></div>
+    <div id="board" class="ui-box"></div>
     <div id="preview" style=""></div>
-    <div id="move-box">
-        <div id="title">
+    <div id="move-box" class="ui-box">
+        <div id="title" class="ui-box">
             Moves
         </div>
         <div id="moves" style="font-size: 20px;">
@@ -152,7 +166,7 @@
             </div>
         </div>
     </div>
-    <div id="info">
+    <div id="info" class="ui-box">
         <div id="rules"></div>
         <div id="player">Connecting...</div>
     </div>
