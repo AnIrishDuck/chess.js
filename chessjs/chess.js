@@ -1,5 +1,5 @@
 /* This is just a dumb server that records rules for now. It'd be nice to
-   implement rules checking in the future (that's actually the primary reason
+   implement rules checking in the future. That's actually the primary reason
    I decided to go with Node on the server - no need to duplicate code that
    checks move validity. */
 var redis = require("redis");

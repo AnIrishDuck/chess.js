@@ -250,6 +250,7 @@ var BoardUI = function(url, stage, size) {
     var setup = function() {
         $.get(self.url, function(data) {
             self.rules = data.rules;
+            self.player = data.player;
             require(['rules/' + self.rules], function(RuleSet) {
                 self.obj = new Board(RuleSet);
                 self.obj.setup();
@@ -287,7 +288,6 @@ BoardUI.prototype.onReady = function() {}
 BoardUI.prototype.update = function() {
     var self = this;
     $.get(self.url, function(data) {
-        self.player = data.player;
         self.replay(data.moves.slice(self.obj.turn));
         var active = self.obj.activePlayer();
         var text = BoardUI.playerText[self.player][active];
@@ -306,6 +306,7 @@ BoardUI.prototype.update = function() {
             start = "";
         }
         $("#player").html(start + text);
+        $("#player").attr("class", self.player);
         $("#rules").html("rules: " + data.rules);
     });
 }
@@ -319,7 +320,8 @@ BoardUI.prototype.replay = function(moves, updateLog) {
         var move = self.obj.parseMove(text);
         if(updateLog) {
             var id = "#" + self.obj.activePlayer() + "-moves";
-            var html ='<a href="#' + self.obj.turn + '">' + text + "</a><br />";
+            var html ='<a id="move-' + self.obj.turn + '" href="">'
+            html += text + "</a><br />";
             $(id).append(html);
         }
         move.mover.ui.moveTo(move.x, move.y, move.promo, moves.length === 1);

@@ -1,0 +1,11 @@
+chess.js: interactive chess in the browser. Developed by Frank Murphy.
+
+Requires redis to run.
+
+To run a local instance:
+    cd chessjs
+    npm install
+    node chess.js
+
+To run unit tests:
+    mocha --reporter spec --globals _
