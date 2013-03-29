@@ -78,22 +78,27 @@
             width: 200,
             height: 200
         });
+        var hidden = true;
 
         var hidePreview = function() {
             previewStage.clear();
             previewStage.removeChildren();
             $("#preview").hide();
+            hidden = true;
         }
 
         hidePreview();
         var showPreview = function(url, ix, y) {
+            hidden = false;
             $("#preview").css("top", y);
             $.get(url, function(data) {
                 var preview = new BoardUI(url, previewStage, 25);
                 preview.onReady = function() {
                     preview.replay(data.moves.slice(0, ix), false);
-                    $("#preview").show();
-                    preview.replay([data.moves[ix]], false);
+                    if(!hidden) {
+                        $("#preview").show();
+                        preview.replay([data.moves[ix]], false);
+                    }
                 }
             });
         }
