@@ -83,6 +83,23 @@
         text-align: center;
     }
 
+    #player.white {
+        color: #fff;
+        text-shadow:
+             -2px -2px 0 #000,
+              2px -2px 0 #000,
+              -2px 2px 0 #000,
+               2px 2px 0 #000;
+    }
+
+    #player.black {
+        color: #000;
+    }
+
+    #player.spec {
+        color: #888;
+    }
+
     #rules {
         font-size: 30px;
         line-height: 30px;
@@ -192,7 +209,7 @@
     </div>
     <div id="info" class="ui-box">
         <div id="rules"></div>
-        <div id="player">Connecting...</div>
+        <div id="player" class="spec">Connecting...</div>
     </div>
 </div>
 </body>

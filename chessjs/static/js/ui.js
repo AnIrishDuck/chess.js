@@ -306,6 +306,7 @@ BoardUI.prototype.update = function() {
             start = "";
         }
         $("#player").html(start + text);
+        $("#player").attr("class", self.player);
         $("#rules").html("rules: " + data.rules);
     });
 }
