@@ -5,7 +5,7 @@ Requires redis to run.
 To run a local instance:
     cd chessjs
     npm install
-    node chess.js
+    npm start
 
 To run unit tests:
-    mocha --reporter spec --globals _
+    npm test
