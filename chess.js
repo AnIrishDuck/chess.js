@@ -21,6 +21,11 @@ if(process.env['DOTCLOUD_PROJECT'] !== undefined) {
         startup(db);
     });
 }
+else if(process.env['REDIS_PORT_6379_TCP_PORT']) {
+    var db = redis.createClient(process.env['REDIS_PORT_6379_TCP_PORT'],
+                                'redis');
+    startup(db);
+}
 else {
     var db = redis.createClient();
     startup(db);
