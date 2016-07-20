@@ -3,10 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node chess"
+    "start": "node chess",
+    "test": "mocha --reporter spec --globals _"
   },
   "dependencies": {
-    "express": "3.1.0",
+    "express": "3.1.x",
     "redis": "*"
+  },
+  "devDependencies": {
+    "mocha": "2.5.x",
+    "requirejs": "2.2.x",
+    "should": "10.0.x",
+    "underscore": "1.8.x"
   }
 }

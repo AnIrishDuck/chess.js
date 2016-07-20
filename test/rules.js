@@ -1,5 +1,5 @@
 var should = require("should");
-var rules = require("../chessjs/rules");
+var rules = require("../rules");
 var _ = require("underscore");
 
 var canMoveTo = function(piece, parsed) {
